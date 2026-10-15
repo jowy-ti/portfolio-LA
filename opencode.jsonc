@@ -1,0 +1,26 @@
+{
+  // Local development config for the portfolio-LA project.
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "jupyter": {
+        "type": "local",
+        // Run the Jupyter MCP server straight from the pixi `mcp` environment.
+        // Install it first with: pixi install -e mcp
+        "command": [".pixi/envs/mcp/bin/jupyter-mcp-server"],
+        "environment": {
+          "JUPYTER_URL": "http://localhost:8888",
+          // Local-only token for JupyterLab on 127.0.0.1. Start JupyterLab with
+          // the same value: pixi run -e mcp jupyter lab --port 8888 --ip 127.0.0.1 --IdentityProvider.token portfolio-la-jupyter-dev-token
+          "JUPYTER_TOKEN": "portfolio-la-jupyter-dev-token",
+          // The active model is not multimodal, so plots/images would be unreadable.
+          "ALLOW_IMG_OUTPUT": "false"
+        },
+        // First start of the pixi environment can be slow.
+        "timeout": {
+          "startup": 60000
+        }
+      }
+    }
+  }
+}

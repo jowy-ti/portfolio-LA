@@ -1,0 +1,495 @@
+                                        TOML-MIRI
+                 Linear Algebra for Data Science  Exploration Exercises
+
+                                           October 2026
+How to use these exercises
+Each exercise is short (2040 minutes). The aim is to explore, visualise and experiment until
+the concept makes sense; the code is only a means to that end.           All exercises are in Python
+(NumPy, SciPy, Matplotlib; ipywidgets or Plotly for sliders), ideally in a Jupyter notebook.
+Each exercise has three parts:
+
+    Task  what to compute and plot.
+    Explore  what to change and watch.
+    Explain  questions to answer in your own words. This is what you hand in.
+   Rules of the game:
+
+  1. Before running anything, write down what you expect to see. Then compare.
+
+  2. Never accept a plot you cannot explain. Go back to the lecture notes until you can.
+
+  3. Verify numerically: every identity you use (orthogonality, A = U ΣV
+                                                                                ⊤ , P 2 = P , . . . ) gets
+
+     a one-line np.allclose check.
+
+  4. Section numbers in brackets point to the lecture notes.
+
+
+
+1. The four subspaces of a linear map                                                        [1.61.8.1]
+
+
+1.1 See the four subspaces in 3-D
+ Task
+ Take a random 3 × 3 matrix of rank 2. Compute bases of its row space, null space, column space and
+ left null space with the SVD. Plot each pair (row space + null space, column space + left null space)
+ in an interactive 3-D gure.
+
+Explore:   Change the rank to 1 and to 3. Which subspaces grow, shrink or disappear?
+
+Explain:   Why is the null space always perpendicular to the row space? Check, for each case,
+
+
+                     dim RS(A) + dim NS(A) = n,            dim CS(A) + dim LNS(A) = m.
+
+1.2 Where does A send a vector?
+ Task
+ For a rank-1 2 × 2 matrix, draw a grid of input vectors and their images Ax. Colour each input by
+ its component along the null space.
+
+Explore:   Move a vector along the null-space direction. What happens to its image?
+
+
+
+                                                  1
+Explain:   Why do all images land on one line? Relate it to the general solution [1.8.1]:
+
+
+                                   x = xr + xns ,       Ax = Axr + Axns = b.
+                                                                   | {z }
+                                                                       =0
+
+
+1.3 Reproduce Example 1.12
+ Task
+ Compute the rank, the null-space vector and a column-space basis of
+                                                       
+                                              2 1 1 1
+                                        A = 3 0 0 2 ,
+                                              1 3 6 0
+
+ using both scipy.linalg.null_space and the SVD.
+
+Explain:   Check every claim in the example numerically. Are columns a2 and a3 really linearly
+           dependent? Which columns would you pick as a basis, and is the choice unique?
+
+
+
+2. Positive denite matrices                                                           [2.62.7, 3.1, 3.5]
+
+
+2.1 The shape of a quadratic form
+ Task
+                                                                    
+                                                              a    b
+ Plot the surface and contour lines of f (x) = x Sx with S =
+                                              ⊤
+                                                                      , with sliders for a, b, c. Show the
+                                                               b   c
+ eigenvalues and draw the eigenvectors on the contour plot.
+
+Explore:   Find slider settings giving a bowl (PD), a valley with a at line (PSD), an upside-
+           down bowl (ND) and a saddle (indenite).
+
+Explain:   How do the signs of the eigenvalues predict the shape? Why do the contour ellipses
+           align with the eigenvectors?
+
+
+
+2.2 A sphere becomes an ellipsoid
+ Task
+ Apply a symmetric PD matrix S = QΛQ⊤ to points v on the unit circle step by step  rst Q⊤ ,
+ then Λ, then Q  and plot the three stages (Figure 5 in the notes).
+
+Explore:   Make one eigenvalue close to 0, then exactly 0.
+
+Explain:   What are the semi-axis lengths and directions of the nal ellipse?
+
+
+
+2.3 A⊤ A is always PSD
+ Task
+ Generate 1,000 random matrices A (some square, some tall, some rank-decient) and record the
+ smallest eigenvalue of A⊤ A for each. Plot a histogram.
+
+                                       x⊤ A⊤ Ax = ∥Ax∥22 ≥ 0.
+
+Explain:   When is the minimum exactly 0 (up to round-o )? Connect this to the proof in [2.7]
+           and to the null space of A.
+
+
+
+
+                                                    2
+3. Multivariate Gaussian                                                                                    [3.6]
+
+
+3.1 Build Σ from geometry
+ Task
+ Build a 2 × 2 covariance Σ = QΛQ⊤ from a rotation angle θ and two variances λ1 , λ2 (sliders),
+                                                               
+                                  cos θ − sin θ             λ1 0
+                              Q=                  ,  Λ=             .
+                                   sin θ cos θ               0 λ2
+
+ Sample N points from N (µ, Σ), plot them
+                                      √     with the ellipses (x − µ)⊤ Σ−1 (x − µ) = c2 for c = 1, 2, 3,
+ and draw the eigenvectors scaled by c λi .
+
+Explore:   N = 100, 1,000, 100,000 (as in the gure after 3.6.4). Set λ1 = λ2 : what happens
+           to the ellipses?
+
+Explain:   What fraction of points falls inside each ellipse? Compare with the χ
+                                                                                                   2 distribution
+
+           with 2 degrees of freedom.
+
+
+
+3.2 Generate correlated data from white noise
+ Task
+ Sample z      ∼    N (0, I), apply            the    transformation       below,       and     compare    with
+ np.random.multivariate_normal.
+
+                       x = µ + QΛ1/2 z        =⇒     Cov(x) = QΛ1/2 IΛ1/2 Q⊤ = Σ.
+
+
+Explain:   Read the transformation as rotatestretchrotate [3.1]. Why is Λ
+                                                                                              1/2 (and not Λ) the
+
+           right stretch?
+
+
+
+3.3 Recover the parameters
+ Task
+ Estimate µ and the sample covariance from the samples, then compare its eigenvectors and eigenvalues
+ with the true ones as N grows.
+                                    N                       N
+                                 1 X                   1 X
+                          x̄ =         xi ,    S=              (xi − x̄)(xi − x̄)⊤ .
+                                 N i=1               N − 1 i=1
+
+
+Explain:   Which is estimated worse, the direction of the long axis or the short axis?                     What
+           happens when λ1 ≈ λ2 ?
+
+
+
+3.4 The precision matrix
+ Task
+ Using Σ from Example 3.3, plot the paraboloid (Figure 6) and the density surface side by side:
+                                                                           1
+                      z = 21 (x − µ)⊤ Σ−1 (x − µ),        fX (x) =                    e−z .
+                                                                     (2π)n/2 |Σ|1/2
+
+Explain:   How are the eigenvalues of Σ and Σ
+                                                      −1 related? Why does the long axis of the ellipse
+
+           correspond to the small eigenvalue of Σ
+                                                           −1 ? Check |Σ| = λ λ [3.6.6].
+                                                                             1 2
+
+
+
+
+                                                      3
+4. Singular value decomposition                                                                                      [4]
+
+
+4.1 Rotate, stretch, rotate
+ Task
+ For a 2 × 2 matrix with entries on sliders, show the unit circle and its image in four panels: x, V ⊤ x,
+ ΣV ⊤ x, U ΣV ⊤ x. Mark v1 , v2 and their images Avi = σi ui .
+
+                        
+                     1 2
+Explore:    Use A =        from Example 4.3. Make A singular. Make A orthogonal.
+                     0 2
+Explain:    Read the spectral norm and the condition number directly from the picture [4.8, 4.9]:
+
+                                                                             σmax
+                                              ∥A∥2 = σmax ,         κ(A) =        .
+                                                                             σmin
+
+4.2 SVD vs eigendecomposition
+ Task
+ Compute the SVD of the 3 × 2 matrix in Example 4.1, then the eigendecompositions of A⊤ A and
+ AA⊤ .
+                    A⊤ A = V Σ⊤ ΣV ⊤ ,    AA⊤ = U ΣΣ⊤ U ⊤ ,      σi2 = λi .
+
+Explain:
+                                    2
+            Match V , U and σi with the eigen-results [4.2]. Why does AA
+                                                                                        ⊤ have an extra zero
+
+            eigenvalue? Are the singular vectors unique (look at their signs)?
+
+
+
+4.3 Low-rank approximation of an image
+ Task
+ Load a grayscale image as a matrix, plot its singular values on a log scale, and show the rank-k
+ approximations for k = 1, 5, 20, 50, 100 next to the original.
+
+Explore:    Compare a photo, a checkerboard, and an image of pure random noise.
+
+Explain:    Check the EckartYoung errors [4.10]. Which image compresses best, and why?
+
+                         k
+                         X                                                                X            1/2
+                  Ak =         σi ui vi⊤ ,     ∥A − Ak ∥2 = σk+1 ,        ∥A − Ak ∥F =            σi2          .
+                         i=1                                                                i>k
+
+
+4.4 Sum of rank-1 pieces
+ Task
+ Using the matrix in Example 4.6, plot each term σk uk vk⊤ as a heatmap, together with the running
+ sum.
+
+Explain:    What does each rank-1 piece add? Compute the three Schatten norms of Example
+            4.4 and check them against the singular values:
+
+                                                      qP            q
+                                                              2      tr(A⊤ A),
+                                                                                               P
+                    ∥A∥2 = σ1 ,              ∥A∥F =        k σk =                     ∥A∥N =      k σk .
+
+
+5. Pseudoinverse                                                                                                   [4.5]
+
+
+5.1 Three roads to A†
+
+                                                       4
+ Task
+ Compute A† for a tall full-column-rank matrix, a wide full-row-rank matrix, and a rank-decient
+ square matrix, in the three ways below, and compare with np.linalg.pinv.
+
+                  A†left = (A⊤ A)−1 A⊤ ,       A†right = A⊤ (AA⊤ )−1 ,         A † = V Σ† U ⊤ ,
+
+                              Σ† = diag 1/σ1 , . . . , 1/σr , 0, . . . , 0 ∈ Rn×m .
+                                                                          
+
+
+Explain:   Which formulas fail for which matrix, and why? Which one always works?
+
+
+
+5.2 Left vs right inverse
+ Task
+ For the matrices in the previous exercise, compute A† A and AA† .
+
+Explain:   Which product is the identity in each case? The other one is a projection matrix:
+           check P
+                     2 = P    = P ⊤ and say onto which subspace (row space or column space) it
+           projects [2.3, 4.5].
+
+
+
+5.3 Projection in pictures
+ Task
+ Take A from Example 2.2 (3 × 2). Plot its column space as a plane in 3-D, a vector t, its projection t̂
+ and the residual e:
+                             t̂ = P t = A(A⊤ A)−1 A⊤ t,     e = t − t̂.
+
+Explore:   Move t with sliders.
+
+Explain:   Why is the residual always perpendicular to the plane? Which of the four subspaces
+           does it live in?
+
+
+
+6. Least squares for overdetermined systems                                                        [1.8.2]
+
+
+6.1 Fit a line, see the geometry
+ Task
+ Generate 30 noisy points y = 2 + 0.5t + noise. Fit a line by solving the normal equations. Plot the
+ data, the tted line and the vertical residuals.
+                                       
+                                1 t1
+                          A =  ...  ..  ,
+                                      .       A⊤ Ax̂ = A⊤ y,    e = y − Ax̂.
+                               
+
+                                  1   t30
+
+
+Explain:   Verify A
+                     ⊤ e = 0. In which subspace of A is e? Why is that the condition for the
+
+           smallest ∥e∥2 [1.8.8]?
+
+
+
+6.2 The error landscape
+ Task
+ Plot the cost below as a surface and contour map over (x1 , x2 ) for the previous problem, and mark
+ the least-squares solution.
+
+                    J(x) = ∥Ax − y∥22 ,        ∇J = 2A⊤ (Ax − y),            ∇2 J = 2A⊤ A.
+
+
+                                                       5
+Explain:    Why is it a paraboloid? What do the eigenvalues of A
+                                                                         ⊤ A say about the shape of the
+
+            contours? (Link to Section 2.)
+
+
+
+6.3 Reproduce Example 1.14
+ Task
+ Solve the system below with the normal equations, np.linalg.lstsq, the pseudoinverse and the QR
+ decomposition.                           
+                              2 1         3
+                                     x 1
+                            1 3        = 1 ,     x̂ = (A⊤ A)−1 A⊤ b.
+                                     x2
+                              0 1           4
+
+
+Explain:
+                                                   ⊤
+            Do all four agree with x̂ = [0.9, 0.5] ? Draw the three lines of the system in the plane
+            and the least-squares point (Figure 4, right).
+
+
+
+6.4 When the normal equations go wrong
+ Task
+ Fit a degree-10 polynomial with A built from columns 1, t, t2 , . . . , t10 , and compare the normal-
+ equations solution with np.linalg.lstsq.
+
+                                            κ(A⊤ A) = κ(A)2 .
+
+Explore:    Print np.linalg.cond(A) and np.linalg.cond(A.T               @ A).
+Explain:    Why does the identity above hold (use the SVD)? Why does it make the normal
+            equations less accurate?
+
+
+
+7. Minimum-norm solution of underdetermined systems                                              [1.8.2]
+
+
+7.1 One equation, two unknowns
+ Task
+ Plot the solution line of 2x1 + x2 = 3, circles ∥x∥2 = r with a slider for r, and the point
+
+                          min ∥x∥22 s.t. Ax = b     =⇒     xr = A⊤ (AA⊤ )−1 b.
+                            x
+
+
+Explore:    Grow r until the circle rst touches the line.
+
+Explain:    Why is the touching point the minimum-norm solution, and why is it perpendicular
+            to the line (i.e. in the row space)?
+
+
+
+7.2 Reproduce Example 1.13
+ Task
+ Compute xr and the null-space vector, and plot in 3-D the solution line xr + c xns .
+                                                                        
+                                                   46                   1
+                    2 1 0           3              1 
+                               x=      ,    xr = 30    −2  ,     xns = −2 .
+                    1 3 1           1
+                                                      −10                   5
+
+
+Explain:
+                     ⊤
+            Check xr xns = 0. Plot the function below: where is its minimum, and why?
+
+
+                                    g(c) = ∥xr + c xns ∥22 = ∥xr ∥22 + c2 ∥xns ∥22 .
+
+                                                    6
+7.3 Gradient descent nds it too
+ Task
+ Run gradient descent from x0 = 0 for a wide A, and plot the iterates in 3-D.
+
+                                           xk+1 = xk − η A⊤ (Axk − b).
+
+Explain:   Every update lies in the row space of A.                    Why does this make it converge to the
+           minimum-norm solution? What happens if you start from a nonzero x0 ?
+
+
+
+8. Fourier basis and Fourier matrix                                                                      [6]
+
+
+8.1 Look at the Fourier matrix
+ Task
+ Build FN for N = 8 and N = 64 from its denition. Plot the real and imaginary parts as heatmaps,
+ and plot each of the rst 8 columns as a sampled cosine/sine.
+                                                       1 −ki
+                    ωN = ej2π/N ,           (FN )ki = √ ωN   ,             k, i = 0, . . . , N − 1.
+                                                       N
+
+Explain:
+                     H
+           Verify FN FN     = I.     Why must you use the conjugate transpose and not the plain
+           transpose? Which columns are the low and which the high frequencies?
+
+
+8.2 DFT as a change of basis
+ Task
+ Compute x̂ = FN x for a random x and compare with np.fft.fft(x).
+                                  N −1                                   N −1
+                                  X                                    1 X
+                          x̂k =          xi e−j2πik/N ,       xi =         x̂k ej2πki/N .
+                                  i=0
+                                                                       N
+                                                                         k=0
+
+
+Explain:   What scaling factor makes FN x and np.fft.fft(x) equal? Check the normalisations
+           in [6.3.1] and the norm="ortho" option. With the unitary FN , verify Parseval: ∥x̂∥2 =
+           ∥x∥2 .
+
+8.3 Speed of the FFT
+ Task
+ Time FN x (matrixvector) against np.fft.fft for N = 26 , . . . , 214 and plot both on a loglog scale.
+
+Explain:   Do the slopes match the costs below [6.3.2]?
+
+                                                              2
+                                  matrixvector: O(N              ),      FFT: O(N log2 N ).
+
+
+8.4 Circulant matrices are diagonal in the Fourier basis
+ Task
+ Build a random circulant matrix C (scipy.linalg.circulant), compute FN CFNH , and show it as a
+ heatmap.
+                           C = FNH ΛFN ,    Cx = h ⊛ x = FNH Λ FN x .
+                                                                   
+
+
+Explain:   Why is FN CFNH diagonal? Check that the diagonal equals the DFT of the rst
+           column h of C , and that Cx (a circular convolution) can be computed with two FFTs
+           and one element-wise product.
+
+
+
+                                                          7
+8.5 Sparsity and denoising
+ Task
+ Reproduce Example 6.2: the signal below plus Gaussian noise. Plot the power spectrum, keep the k
+ largest coecients, invert.
+
+                  f (t) = sin(2π · 50 t) + sin(2π · 120 t) + ε(t),   ε(t) ∼ N (0, σ 2 ).
+
+Explore:   Vary k and the noise level σ . Repeat with pure white noise.
+
+Explain:   Why is the clean signal sparse in the Fourier basis but noise is not [6.4]? Compare
+           the Fourier basis (universal) with the SVD basis of the image exercise in Section 4
+           (tailored to the data).
+
+
+
+
+                                                     8
+
