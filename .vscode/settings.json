@@ -1,0 +1,7 @@
+{
+  // VS Code Jupyter extension: where to fetch the JavaScript that renders
+  // ipywidgets (the interact sliders in the Part notebooks). Without this VS
+  // Code warns "Widgets require us to download supporting files ...".
+  // Both hosts are reachable from this machine; the order is the fallback order.
+  "jupyter.widgetScriptSources": ["jsdelivr.com", "unpkg.com"]
+}
