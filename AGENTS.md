@@ -78,9 +78,10 @@ prose instead of trusting every line break in `portfolio.txt`.
 
 `notebooks/Part1.ipynb` is the completed **reference implementation** for topic 1
 and the model for structure, tone and code style. `notebooks/Part2.ipynb` and
-`notebooks/Part3.ipynb` are also complete. `notebooks/Part4.ipynb` exists and
-implements exercises 4.1–4.3; exercise 4.4 is added when the user asks for it.
-Create the remaining Parts 5–8 only when the user asks for them.
+`notebooks/Part3.ipynb` are also complete. `notebooks/Part4.ipynb` implements
+exercises 4.1–4.4, `notebooks/Part5.ipynb` implements 5.1–5.3 and
+`notebooks/Part6.ipynb` implements 6.1–6.4. Create the remaining Parts 7–8
+only when the user asks for them.
 
 The notebooks are organised **one notebook per topic**, not per exercise:
 
@@ -121,16 +122,15 @@ cell, and notebooks must not import from one another.
 - `scipy.linalg.orth` is itself SVD-based, so for a fixed matrix it returns the same
   frame as `U[:, :r]`. Only the *subspace* is canonical, not the frame — phrase it
   that way rather than claiming the two differ.
-- Static figures use Matplotlib. Interactive figures follow Part1's pattern:
-  self-contained Plotly (`go.Frame`, Plotly sliders, `updatemenus`) rather than
-  ipywidgets, so they render without a live widget manager. Do not switch to
-  ipywidgets unless the user asks. Part4's 4.1 entry sliders are the one exception,
-  added at the user's request: four matrix entries need four independent controls,
-  which Plotly sliders cannot express, so that cell uses `ipywidgets`, redrawing by
-  replacing its outputs in place (see *Way of solving exercises*), with the static
-  Matplotlib four-panel figure in the preceding cell as the durable view.
+- Static figures use Matplotlib. Any interactive control (sliders, buttons that
+  change a parameter) uses `ipywidgets`, redrawing by replacing its outputs in
+  place (see *Way of solving exercises*), with a static Matplotlib figure in the
+  preceding cell as the durable view. Do not build sliders with Plotly
+  (`go.Frame` sliders or `updatemenus`). Part4 §4.1 and Part5 §5.3 are the
+  reference implementations of this pattern; §5.3 has two independent sliders
+  for the direction of a 3-D vector.
   `pixi.toml` declares `ipywidgets` and `.vscode/settings.json` configures widget
-  script sources for that case.
+  script sources for interactive cells.
 
 ### Way of solving exercises
 
