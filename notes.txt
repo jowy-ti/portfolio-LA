@@ -1,0 +1,3324 @@
+    TOML-MIRI: Review of linear algebra and
+         applications to data science
+
+ Jorge Garcia Vidal, Jose M. Barcelo Ordinas and Pau Ferrer Cid
+
+                               August 31, 2026
+
+
+Contents
+1 Some basic facts that you probably know about vectors and
+  linear maps                                               5
+  1.1   Vector spaces and sub-spaces . . . . . . . . . . . . . . . . . . . .        5
+  1.2   Linear combinations and independence . . . . . . . . . . . . . . .          7
+  1.3   Bases and dimension . . . . . . . . . . . . . . . . . . . . . . . . .       7
+  1.4   Scalar product, orthogonality, and vector norms . . . . . . . . . .         8
+  1.5   From vector spaces to Hilbert spaces . . . . . . . . . . . . . . . .       10
+  1.6   Linear maps and matrices . . . . . . . . . . . . . . . . . . . . . .       12
+  1.7   Rank of a matrix . . . . . . . . . . . . . . . . . . . . . . . . . . .     13
+  1.8   Applications . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   15
+        1.8.1   Linear equations . . . . . . . . . . . . . . . . . . . . . . .     15
+        1.8.2   Least squares equations . . . . . . . . . . . . . . . . . . .      16
+
+2 Eigenvectors and eigenvalues                                                     19
+  2.1   Linear transformations . . . . . . . . . . . . . . . . . . . . . . . .     20
+  2.2   Diagonalization and eigendecomposition . . . . . . . . . . . . . .         20
+  2.3   Some important types of matrices . . . . . . . . . . . . . . . . . .       21
+  2.4   An m×n matrix of rank r maps a sphere of dimension n into an
+        ellipsoid of dimension r . . . . . . . . . . . . . . . . . . . . . . .     23
+  2.5   Matrix factorization . . . . . . . . . . . . . . . . . . . . . . . . .     23
+  2.6   Diagonalization of symmetric matrices . . . . . . . . . . . . . . .        24
+
+
+                                         1
+        2.6.1   Eigenvectors are orthogonal . . . . . . . . . . . . . . . . .        24
+        2.6.2   Eigenvalues are real . . . . . . . . . . . . . . . . . . . . .       24
+  2.7   Positive definite matrices     . . . . . . . . . . . . . . . . . . . . . .   26
+
+3 Useful properties of matrices                                                      27
+  3.1   Geometric interpretation for symmetric matrices: Rotation/Reflection,
+        Stretching, Rotation/Reflection−1 . . . . . . . . . . . . . . . . . . 27
+  3.2   Basic operations with vectors and matrices . . . . . . . . . . . .           28
+  3.3   Derivatives with vectors and matrices . . . . . . . . . . . . . . .          29
+  3.4   The trace operator . . . . . . . . . . . . . . . . . . . . . . . . . .       30
+        3.4.1   The trace operator is cyclic . . . . . . . . . . . . . . . . .       30
+        3.4.2   The trace of a matrix is the sum of its eigenvalues counting
+                multiplicities . . . . . . . . . . . . . . . . . . . . . . . . .     31
+        3.4.3   Derivatives of a trace . . . . . . . . . . . . . . . . . . . . .     31
+  3.5   Quadratic forms, sub-level sets, paraboloids and ellipsoids . . . .          32
+  3.6   Multivariate Gaussian distribution . . . . . . . . . . . . . . . . .         33
+        3.6.1   The quadratic form 12 (x − µ)⊤ Σ−1 (x − µ) . . . . . . . .           33
+        3.6.2   Isocontour lines (or α-level sets) . . . . . . . . . . . . . .       33
+        3.6.3   Isotropic Gaussian distribution . . . . . . . . . . . . . . .        34
+        3.6.4   Datasets generated from independent sampling of a mul-
+                tivariate Gaussian distribution . . . . . . . . . . . . . . .        35
+                            1 ⊤ −1
+        3.6.5   Expressing 2n x Σ x as the trace of the product of two
+                matrices . . . . . . . . . . . . . . . . . . . . . . . . . . . .     36
+                               1/2
+        3.6.6   The term |Σ|         . . . . . . . . . . . . . . . . . . . . . . .   36
+
+4 The Singular Value Decomposition (SVD)                                             36
+  4.1   The SVD . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        37
+  4.2   Relation between EVD (eigenvalue decomposition) and SVD (sin-
+        gular value decomposition) . . . . . . . . . . . . . . . . . . . . .         37
+  4.3   Selecting the orthonormal basis in the SVD . . . . . . . . . . . .           38
+  4.4   Geometric interpretation . . . . . . . . . . . . . . . . . . . . . . .       40
+  4.5   SVD, pseudo-inverse and projection matrices . . . . . . . . . . .            41
+  4.6   Economy, compact and truncated SVD . . . . . . . . . . . . . . .             43
+
+
+                                          2
+  4.7   The SVD as the sum of r matrices of rank 1 . . . . . . . . . . . .           43
+  4.8   Matrix norms . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       44
+        4.8.1   Matrix norms induced by vectors p-norms . . . . . . . . .            44
+        4.8.2   Schatten norms: Matrix norms that can be expressed in
+                terms of singular values . . . . . . . . . . . . . . . . . . .       45
+  4.9   Condition number of a matrix         . . . . . . . . . . . . . . . . . . .   47
+  4.10 Eckart-Young approximation (low-rank approximation) . . . . . .               48
+
+5 Principal component analysis (PCA)                                                 50
+  5.1   Interpretation 1: maximizing directions with maximum variability 51
+  5.2   Interpretation 2: projecting in a subspace . . . . . . . . . . . . .         52
+  5.3   Connection PCA-SVD . . . . . . . . . . . . . . . . . . . . . . . .           53
+  5.4   Amount of total variance explained . . . . . . . . . . . . . . . . .         53
+  5.5   Eigenfaces . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     53
+
+6 The Fourier transform                                                              55
+  6.1   Fourier series . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     56
+  6.2   Fourier transform . . . . . . . . . . . . . . . . . . . . . . . . . . .      58
+        6.2.1   Some basic properties of the FT . . . . . . . . . . . . . .          58
+        6.2.2   Applications . . . . . . . . . . . . . . . . . . . . . . . . .       60
+  6.3   Discrete Fourier Transform and Fast Fourier Transform . . . . .              60
+        6.3.1   The Discrete Fourier Transform (DFT) . . . . . . . . . .             61
+        6.3.2   The Fast Fourier Transform (FFT) . . . . . . . . . . . . .           62
+        6.3.3   The complex conjugate of the columns of the Fourier ma-
+                trix are the eigenvectors of the circulant matrices . . . . .        62
+  6.4   Most natural signals are sparse in the Fourier base . . . . . . . .          65
+
+7 Optional: Graph signal processing and its applications                             65
+  7.1   Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     65
+  7.2   Adjacency matrix, the weighted matrix and the Laplacian matrix               67
+  7.3   Creating the graph . . . . . . . . . . . . . . . . . . . . . . . . . .       68
+  7.4   Spectral graph theory . . . . . . . . . . . . . . . . . . . . . . . .        71
+
+
+
+                                         3
+7.5   The adjacency matrix and the graph signal shift . . . . . . . . .       71
+7.6   The graph discrete Fourier transform . . . . . . . . . . . . . . . .    71
+7.7   Signal reconstruction in a IoT network . . . . . . . . . . . . . . .    72
+      7.7.1   Laplacian interpolation . . . . . . . . . . . . . . . . . . .   72
+      7.7.2   Graph Signal Processing (GSP) low-pass reconstruction .         73
+
+
+
+
+                                      4
+The course TOML belongs to the Master MIRI (Master of Innovation and Re-
+search in Computer Science) of the Faculty of Computer Science of Barcelona.
+The course is an introduction to some mathematical foundations used in data
+science. The course content includes an introduction to probability, linear alge-
+bra, estimation and an introduction to machine learning methods.
+These lecture notes of the course are devoted to linear algebra concepts applied
+to data science, and is divided into the following topics:
+
+    1. Basics in Linear Algebra: vector spaces, matrices, and applications (linear
+       equations and least squares equations);
+    2. Eigendecomposition of square matrices: eigenvectors and eigenvalues, pos-
+       itive definite matrices and the trace operator;
+    3. Quadratic forms. Multivariate Gaussian distribution;
+    4. Eigendecomposition of square matrices: singular value decomposition,
+       pseudoinverses, matrix norms, Eckart-Young approximation (low-rank ap-
+       proximation of matrices);
+    5. Principal component analysis (PCA), the eigenfaces problem;
+    6. Fourier Transform and its applications;
+    7. Graph signal processing (GSP) and its applications.
+
+Linear Algebra is a classical topic, and there are many very good books covering
+the material that we need for our course at different levels of deep. Some books
+that we especially like and that we have used to build the contents of this
+SANS-MIRI lecture notes are:
+
+    • ”Introduction to Linear Algebra” by Gilbert Strang.
+    • ”Linear Algebra and Learning from Data” by Strang, Gilbert.
+    • ”Data-Driven Science and Engineering: Machine Learning, Dynamical
+      Systems, and Control” by Steven L. Brunton and J. Nathan Kutz.
+    • ” Introduction to Applied Linear Algebra – Vectors, Matrices, and Least
+      Squares” by Stephen Boyd and Lieven Vandenberghe.
+
+
+1     Some basic facts that you probably know about
+      vectors and linear maps
+
+1.1     Vector spaces and sub-spaces
+
+Let V be a set in which we have defined the addition operation and the multipli-
+cation by a scalar (in this course, the scalars will be usually real numbers). We
+
+
+                                        5
+say that V is a vector space if the addition and scalar multiplication operations
+satisfy the following properties:
+∀u, v, w∈V :
+
+   • Associativity: u + (v + w) = (u + v) + w,
+   • Commutativity: u + v = v + u,
+   • Additive identity: ∃0∈V such that v + 0 = v, ,
+   • Existence of inverse: ∀v∈V, ∃ −v ∈V such that v + (−v) = 0.
+
+∀ a, b ∈ R and ∀u, v∈V :
+
+   • Associativity of scalar multiplication: a(bv) = (ab)v,
+   • Scalar multiplication identity: 1v = v,
+   • Distributivity of scalar sums: (a + b)v = av + bv,
+   • Distributivity of vector sums: a(u + v) = au + av.
+
+The elements of a vector space are called vectors. Some examples of vector
+spaces are:
+
+Example 1.1 (Coordinate space) The set of vectors x∈Rn with coordinates
+x=(x1 , ..., xn ) and t∈R is a vector space.
+
+Example 1.2 (Set of matrices) The set of matrices A∈Rm×n is a vector
+space over R, (addition of matrices and multiplication of scalar over matrices).
+
+Example 1.3 (Set of polynomials) The set of polynomials Pn over R (co-
+efficients in R) and of order less or equal of n is a vector space.
+
+Example 1.4 (Set of continuous functions) The set of continuous functions
+f : Rn −
+       → R, where (f +g)(x) = f (x)+g(x) and (af )(x)=af (x) is a vector space.
+
+If S is a subset of V (S⊂V ) which is closed respect the operations of sum of
+vectors (if u, v∈S, then u + v∈S), multiplication by an scalar (if u∈S and a
+scalar then au∈S), and the zero vector is in S, we say that S is a vector subspace
+of V . Some examples/non-examples of vector subspaces V are:
+
+Example 1.5 A line or a plane containing the origin is a vector subspace.
+
+Example 1.6 A line or a plane non containing the origin is not a vector sub-
+space.
+
+
+                                        6
+Example 1.7 A quadrant is not a vector subspace (fails to be close under scalar
+multiplication).
+
+Example 1.8 A circle is not a vector subspace (fails to be close under scalar
+multiplication and does not contain the zero).
+
+
+1.2    Linear combinations and independence
+
+If we have a set of vectors {v1 , ...,∑︁vk }, a linear combination of these vectors
+is an expression of the form v = i ai vi for some scalars ai .
+If we have a set of vectors belonging to a vector space, {v1 , ..., vk }, the set of
+all linear combinations of these vectors is a vector subspace. This subspace is
+called:
+                              k
+                             ∑︂
+      span{v1 , ..., vk } = {   βj vj ; with βj ∈R}                            (1.2.1)
+                            j=1
+
+One vector w is linearly independent of a set of vectors {v1 , ..., vk } when
+w cannot be expressed as linear combination of the vectors {v1 , ..., vk }, or
+in other words, when w∈     / span{v1 , ..., vk }. A set of vectors {v1 , ..., vk } are
+linearly independent when the only linear combination that produces the vector
+∑︁isk the one with all coefficients equal to zero. Summarizing, let us assume that
+0
+   j=1 aj vj = 0; if some aj ̸=0 then the vectors are linearly dependent (l.d.),
+while if all aj =0 then the vectors are linearly independent (l.i.).
+
+
+1.3    Bases and dimension
+
+There are many examples of vector spaces: Rn , Cn , or Pn (R), the set of poly-
+nomials of n degree with real coefficients. These spaces are examples of finite
+dimensional vector spaces. This means that there is a set of linearly indepen-
+dent vectors of V , {ui }i=1,...,n
+                               ∑︁n (a base of V ) such that all other vectors of V
+can be expressed as v = i=1 vi ui . A vector space has in general an infinite
+number of possible bases, but the number of elements in each of those basis is
+always the same. We say that this number n the dimension of V , dim(V ) = n.
+Moreover, we can use these coefficients to represent v as a column vector:
+                                 ⎡ ⎤
+                                   v1
+                                 ⎢ v2 ⎥
+     v = [v1 , v2 , ..., vn ]⊤ = ⎢ . ⎥                                      (1.3.1)
+                                 ⎢ ⎥
+                                 ⎣ .. ⎦
+                                  vn
+
+The same definitions apply to vector subspaces.
+
+
+                                          7
+Example 1.9 (Infinite dimensional spaces) Some vector spaces have infi-
+nite dimensions, for instance, P∞ (R), the set of polynomials of an arbitrary
+order, C[0, 1], the set of continuous functions defined on the interval [0, 1], or
+                                                             ∫︁ 1
+L2 [0, 1], the set of square integrable functions f for which 0 |f |2 dµ < ∞. In
+this course, we will deal with the finite dimensional case only. The infinite di-
+mensional case is studied in functional analysis, and is important, for instance,
+when dealing with stochastic processes.
+
+
+1.4    Scalar product, orthogonality, and vector norms
+
+The scalar product is an operation that takes two vectors u, v ∈ V and returns
+a scalar; i.e., ⟨·, ·⟩: V ×V −
+                             → R. For this operation to qualify as a scalar product,
+it must fulfill the following properties:
+
+   • commutative: ⟨u, v⟩ = ⟨v, u⟩,
+   • distributive: ⟨u, v + w⟩ = ⟨u, v⟩ + ⟨u, w⟩,
+   • linearity in any argument: ⟨au, v⟩ = ⟨u, av⟩ = a⟨u, v⟩,
+   • positive definiteness: if u ̸= 0, then ⟨u, u⟩ > 0.
+
+The most commonly used definition of the scalar product for two column vectors
+u and v is:
+
+      ⟨u, v⟩ = u⊤ v.                                                         (1.4.1)
+
+Note, however, that we can define other scalar products. For instance, if S is a
+symmetric positive definite matrix (see section 2.7), we can define a scalar
+product as:
+
+      ⟨u, v⟩ = u⊤ Sv.                                                        (1.4.2)
+
+Another important example is the scalar product of two square matrices A and
+B defined as (see section 3.4 for the definition of trace):
+
+      ⟨A, B⟩ = tr(A⊤ B).                                                     (1.4.3)
+
+A very important property of the scalar product is the Cauchy-Schwarz in-
+equality:
+
+      |⟨u, v⟩|2 ≤ ⟨u, u⟩ ⟨v, v⟩.                                             (1.4.4)
+
+We have equality only when u = av for some scalar a.
+A simple proof of this important fact is the following: consider an arbitrary
+scalar a and two non-zero vectors u, v. Assume first that there is no scalar a for
+
+
+                                         8
+which au = v. Then, the positive-definiteness property of the scalar product
+implies that for any a:
+     0 < ⟨au − v, au − v⟩ = ⟨u, u⟩a2 − 2⟨u, v⟩a + ⟨v, v⟩.                (1.4.5)
+But this second-degree polynomial on a is always non-negative for all a only
+when:
+     4(⟨u, v⟩)2 − 4⟨u, u⟩⟨v, v⟩ < 0,                                     (1.4.6)
+and from this, we arrive at the strict Cauchy-Schwarz inequality.
+Assume now that there is a scalar a∗ for which a∗ u = v. In this case, we have
+     0 ≤ ⟨au − v, au − v⟩ = ⟨u, u⟩a2 − 2⟨u, v⟩a + ⟨v, v⟩.                (1.4.7)
+with equality for a = a∗ . This means that the second-degree polynomial in a
+has a double root at a∗ , which is only possible if:
+     4(⟨u, v⟩)2 − 4⟨u, u⟩⟨v, v⟩ = 0,                                     (1.4.8)
+and from this, we arrive at the equality case of Cauchy-Schwarz inequality when
+v is colinear with u.
+We can define the angle α between two non-zero vectors u, v as:
+                     ⟨u, v⟩
+     cos(α) = √︁                   .                                     (1.4.9)
+                   ⟨u, u⟩ ⟨v, v⟩
+
+Two non-zero vectors are orthogonal when its scalar product is zero:
+     ⟨u, v⟩ = 0.                                                        (1.4.10)
+                                                            ◦
+Thus, the angle between two orthogonal vectors is α = 90 .
+A norm is a function ∥·∥: Rn −
+                             → R, such that for each vector v∈Rn , the following
+conditions are satisfied:
+
+   • ∥ · ∥ is non-negative, ∥v∥ ≥ 0
+   • ∥ · ∥ is definite, ∥v∥ = 0 iif v = 0,
+   • ∥ · ∥ is homogeneous ∥(av)∥ = |a|∥v∥ with a scalar,
+   • ∥ · ∥ satisfies the triangle inequality (subadditivity property) ∥u + v∥ ≤
+     ∥u∥ + ∥v∥.
+
+The Euclidean norm or also called L2-norm represents the length of a vector
+v, and is defined as the non-negative number:
+               √︁
+     ∥v∥ = + ⟨v, v⟩                                                (1.4.11)
+
+Other well-known norms are represented by a subscript ∥ · ∥p , where p∈R+ (R+
+means any real number ≥0). Examples of useful norms are:
+
+
+                                         9
+   • ∥v∥0 (zero-norm or L0-norm) defined as the number of non-zero coordi-
+     nates of vector v (or also as the Hamming distance of the vector from
+     zero),
+   • ∥v∥1 (Taxicab
+               ∑︁n norm or Manhattan norm or sum-absolute norm) defined
+     as ∥v∥1 = i=1 |vi |,
+                                                          √︁∑︁n
+   • √
+     ∥v∥2 (Euclidean norm or L2-norm) defined as ∥v∥2 =                2
+                                                              i=1 |vi | =
+        ⊤
+       v v,
+                                       ∑︁n
+   • ∥v∥p (Lp-norm) defined as ∥v∥p = ( i=1 |vi |p )1/p ,
+   • ∥v∥∞ (maximum norm or infinity norm or Chebyshev norm) defined as
+     ∥v∥∞ = maxi=1...n {|vi |}.
+
+Example 1.10 (Vector norms)√    Let us assume vector v=[1,0,0,4,2,-3]. Then,
+∥v∥0 = 4, ∥v∥1 = 10, ∥v∥2 = 30 = 5.477, ∥v∥3.2 = 4.558 and ∥v∥∞ = 4
+
+The Cauchy-Schwarz inequality for the Euclidean norm reads:
+
+      |u⊤ v| ≤ ∥u∥ ∥v∥                                                     (1.4.12)
+
+Let us define the unit circle or unit ball as the set of all vectors v of norm 1
+(∥v∥p = 1). Then plot, as an exercise, the unit circle for norms ∥v∥0 , ∥v∥1 ,
+∥v∥2 , ∥v∥∞ , and ∥v∥p for any p.
+
+
+1.5    From vector spaces to Hilbert spaces
+
+We are interested in introducing reproducing kernel Hilbert spaces (RKHS).
+For this, we need the concept of Hilbert spaces. Here we give a brief reminder
+of what Hilbert spaces represent. The steps to introduce a Hilbert space consist
+of defining a vector space, a normed space, a Banach space, Cauchy sequences
+and finally Hilbert spaces.
+
+   • Vector space: is a set of objects called vectors that are closed under
+     finite vector addition and scalar multiplication, i.e., associativity, commu-
+     tativity, additive, inverse of vectors, and associativity of scalar multiplica-
+     tion, distributive of scalar sums and vector sums, and scalar multiplication
+     identity.
+   • Normed space: is a vector space X , in which for each vector x∈X there
+     is a real-valued function norm ∥ · ∥: X → R that satisfies:
+       1. || · || is non-negative: ∥x∥ ≥ 0;
+       2. || · || is definite: ∥x∥ = 0 iff x = 0;
+       3. || · || is homogeneous: ∥cx∥ = |c| ∥x∥ for any scalar c;
+
+
+                                         10
+    4. || · || satisfies the triangle inequality: ∥x + y∥ ≤ ∥x∥ + ∥y∥.
+  Note that the norm is not necessarily induced by an inner product. A
+  norm induces a distance: d(x, y) = ∥x − y∥ which makes any normed
+  space a metric space and a topological vector space (a topological vector
+  space is a vector space that is also a topological space with the property
+  that the vector space operations - vector addition and scalar multiplication
+  - are also continuous functions).
+• Banach Space: is a normed spaced that is complete, which means that
+  every Cauchy sequence converges with respect to that norm. Let be X a
+  normed space (a vector space with a norm associated), and let be {xn }n∈N
+  a sequence in X . A sequence {xn }n∈N converges to x∈X if limn→∞ ∥xn −
+  x∥=0, it is to say, ∀ϵ>0, ∃N >0, ∀n≥N such that ∥xn − x∥<ϵ, and then
+  we write limn→∞ xn =x or xn → x, Figure 1.
+
+
+
+
+               (a)                                      (b)
+
+
+
+                     Figure 1: Convergence of sequences.
+
+  A sequence {xn }n∈N is a Cauchy sequence if: ∀ϵ>0, ∃N >0, ∀n, m≥N
+  such that ∥xn − xm ∥<ϵ, meaning that (xn and xm are ”closed” to each
+  other), Figure 2. It can be proof that Convergence → Cauchy, but Cauchy
+  ↛ Convergence.
+
+
+
+
+        (a) Cauchy sequence                   (b) Non Cauchy sequence
+
+
+
+                        Figure 2: Cauchy sequences.
+
+
+                                     11
+      Why is important that the space is complete ? In the definition of con-
+      vergence it is used the terms of the sequence and the limit, however in
+      the Cauchy sequence definition only depends on the terms (not the limit).
+      This is useful in algorithms that produce a Cauchy sequence (iterations)
+      with some stopping criteria. Thus, it is important that this Cauchy se-
+      quence converges.
+   • Inner-product Space or pre-Hilbert space: is a vector space V over a
+     field F (e.g., R) with an inner product defined. Remember that if x, y∈V
+     are vectors and a, b∈F are scalars, then an inner-product is a mapping
+     < ·, · > : V ×V → F that satisfies for vectors:
+        1. positive semi-definiteness: < x, x > is real and < x, x > ≥0;
+        2. point-separating or definiteness: < x, x > =0 iff x=0;
+        3. conjugate symmetry or Hermitian symmetry: < x, y > = < y, x >
+        4. linearity: < ax1 + bx2 , y > =a < x1 , y > +b < x2 , y >.
+      Note that since inner-products induce norms, then a pre-Hilbert space is
+      a norm space.
+   • Hilbert space: is an inner-product space H that is complete (is also a
+     Banach space). That means that a Hilbert space H is a vector space, with
+     an inner product < ·, · > H that induces a norm and that all Cauchy
+     sequences are convergent. Note that since norms induce distances d(x,
+     y) = ∥x − y∥, a Hilbert space also is a metric space. For example, the
+     Euclidean space is a Hilbert space; i.e., H∈R3 , < x, y >= x⊤ y∈R3 (dot
+                       √
+     product), ∥x∥2 = ( < x, y >) (l-2 norm).
+
+
+1.6    Linear maps and matrices
+
+A linear map L is an application L: V → W , where V (domain) and W (co-
+domain) are vector spaces, that satisfies ∀u, v∈V , and ∀a, b∈R:
+      L(u + v) = L(u) + L(v) and L(au) = aL(u),                               (1.6.1)
+or (identical definition)
+      L(au + bv) = aL(u) + bL(v).                                             (1.6.2)
+
+For example; L(x1 ,x2 )=(x1 +x2 ,x1 ,x2 +1) is not a linear map, as it fails in the
+condition L(au) = aL(u). A linear map always transforms 0 to 0, i.e., L(0) = 0.
+Assume that {vi }i=1,...,n is a base of a n dimensional space V , while {wi }i=1,...,m
+is a base of a m dimensional space W . The image of the ui base vector by the
+linear map L, i.e. L(ui ), is a vector of W , that we can express in the base
+{wi }i=1,...,m :
+      L(ui ) = a1i w1 + a2i w2 + ... + ami wm                                 (1.6.3)
+
+
+                                         12
+An m×n matrix A is an arrangement of these numbers aij into an m×n array
+A = [aij ]. For an arbitrary vector v, expressed as a column vector in the base
+{vi }i=1,...,n , the product Av gives a result the vector w, which is the image of
+the vector v by the linear map L expressed in the base {wi }i=1,...,m .
+This is a bit confusing at first. Let’s think on the following example.
+
+Example 1.11 (Infinite dimensional spaces) Let {1, x, x2 } be a possible base
+of P2 (R). Using this base, we can represent the polynomial p(x) = a + bx + cx2
+by the R3 vector p = [a, b, c]⊤ . Let us define the linear map dx
+                                                                d
+                                                                  : P2 (R) → P2 (R)
+that assigns to a polynomial p(x) its derivative (another polynomial). If we rep-
+resent the polynomials in the image and domain sets by the same base {1, x, x2 },
+we can thus represent this linear map by the matrix:
+           ⎡          ⎤
+             0 1 0
+       D = ⎣0 0 2⎦ .                                                        (1.6.4)
+             0 0 0
+
+Usually, we will use matrices to represent linear maps. Very often, we express a
+matrix A as an arrangement of its columns (or its rows) considered vectors. For
+instance if A = [aij ] and let us define the n column vectors ai = [a1i , ..., ami ]⊤
+for i = 1, ..., n. We can write the matrix as:
+
+      A = [a1 , ..., an ]                                                     (1.6.5)
+
+Similarly, we can write A using its row vectors rj ⊤ = [aj1 , ..., ajn ]:
+
+            — r1 ⊤ —
+           ⎡              ⎤
+
+      A=⎣          ..
+                          ⎦.                                                  (1.6.6)
+           ⎢              ⎥
+                    .
+                        ⊤
+             —     rm       —
+
+If we have a matrix A and a column vector v = [v1 , ..., vn ]⊤ , we can express its
+matrix times vector product as
+                               ⎡ ⎤
+                                v1
+                               ⎢ .. ⎥    ∑︂
+      w = Av = [a1 , ..., an ] ⎣ . ⎦ =          vi ai ,                    (1.6.7)
+                                vn     i=1,..,n
+
+
+which is saying that the image vector w is a linear combination of the column
+vectors ai .
+
+
+1.7    Rank of a matrix
+
+The image f of all vectors of a subspace S of V by means of a matrix A is also
+a subspace T of W ; f :S⊂V → T ⊂W .
+
+
+                                          13
+In the special case when the subspace S is V itself, the generated subspace is
+span{a1 , ..., an }. The dimension of this subspace is the rank of the matrix A,
+rank(A), and it is the number of linearly independent columns.
+Very surprisingly, this number is also the number of linearly independent rows
+of the matrix A, meaning that A and A⊤ have the same rank.
+In terms of rows and columns of a matrix A∈Rm×n and matrix A⊤ ∈Rn×m ,
+we can state the actions of an m×n matrix remembering that matrix A can
+be expressed as column vectors {a1 , ..., an } or matrix A can be expressed as
+row vectors {r1 ⊤ , ..., rm ⊤ }. In the same way matrix A⊤ can be expressed
+as column vectors {r1 , ..., rm } or matrix A⊤ can be expressed as row vectors
+{a1 ⊤ , ..., an ⊤ }.
+For any matrix, we can associate several subspaces: the null space (NS), the
+column space (CS), the row space (RS), and the left null space (LNS).
+Let us define the Range(A) or Im(A)=Image(A) as the image of the linear
+transformation f :Rn ⊂V → Rm ⊂W :
+
+      Im(A) = Range(A) = {y∈Rm |y = Ax f or some x∈Rn }                      (1.7.1)
+
+and we can observe, Range(A)= Im(A) is a subspace of Rm . The Im(A⊤ ) is
+defined in a similar way and is a subspace of Rn .
+
+      Im(A⊤ ) = Range(A⊤ ) = {x∈Rn |x = A⊤ y f or some y∈Rm }                (1.7.2)
+
+and, Range(A⊤ )= Im(A⊤ ) is a subspace of Rn .
+Define the column space of A, CS(A), as the linear combination of its columns:
+CS(A)= span{a1 , . . . , an }= {w∈Rm , w=c1 a1 + · · · + cn an }, where ai ∈Rm .
+The CS(A) is then a subspace of Rm . The CS(A) is the Range(A) or Im(A) of
+the linear transformation f :Rn ⊂V → Rm ⊂W .
+In a similar way, we define the row space of A, RS(A), as the linear com-
+bination of its rows: RS(A)= span{r1 , . . . , rm }= {v∈Rn , v=d1 r1 + · · · +
+dm rm }, where ri ∈Rn . The RS(A) is then a subspace of Rn , and then it is
+the Range(A⊤ ) or Im(A⊤ ).
+We know that dim(RS(A))= rank(A) and that dim(CS(A))= rank(A), which
+makes dim(RS(A))=dim(CS(A))= rank(A). Since the columns of A are the
+rows of A⊤ , finding a basis for CS(A) is equivalent to finding a basis for RS(A⊤ ).
+The null space NS(A) or Ker(f) is defined as:
+
+      N S(A) = {x∈Rn |Ax = 0}                                                (1.7.3)
+
+and we can observe that NS(A) is a subspace of Rn . The NS(A⊤ ) (also called
+the Left Null Space of A, LNS(A) or the CoKer(f)) is defined in a similar way
+and is a subspace of Rm .
+
+      LN S(A) = N S(A⊤ ) = {y∈Rm |A⊤ y = 0} = {y∈Rm |y ⊤ A = 0}              (1.7.4)
+
+
+                                        14
+If A=[a1 , ..., an ] is a column partitioning, and rank(A)=span{a1 , ..., an }. Now,
+since the rank(A) is the dimension of the image; rank(A)= dim(Range(A))=
+dim(Im(A))=dim(CS(A)), and we know that rank(A)=rank(A⊤ ). We say that
+the matrix A∈Rm×n is rank deficient if rank(A)<min{m,n}, and therefore:
+
+        dim(RS(A)) + dim(N S(A)) = rank(A) + dim(N S(A)) = n                 (1.7.5)
+
+We can state that RS(A)= Im(A⊤ ) ⊂Rn ⊥ NS(A)⊂Rn . On the other hand, in
+terms of the CS and LNS:
+
+        CS(A) = Im(A)⊂Rm ⊥ LN S(A) = N S(A⊤ )⊂Rm                             (1.7.6)
+
+and
+
+        dim(CS(A)) + dim(LN S(A)) = rank(A) + dim(LN S(A)) = m (1.7.7)
+
+You can see this in the following way: A⊤ y=0 (or y ⊤ A=0), so rows of A⊤
+multiplied by vectors y in the null space are equal to 0 (or vectors y of the left
+null space multiplied by columns of A are equal to 0), so they are orthogonal.
+
+Example 1.12 (Row space, column space, null space and left null space)
+Let’s see an example of a matrix A∈Rm×n , with m=3 and n=4:
+           ⎡            ⎤
+             2 1 1 1
+      A = ⎣3 0 0 2⎦
+             1 3 6 0
+
+The rank of this matrix is r=3. It has 3 row vectors; r ⊤                           ⊤
+                                                                1 = [2, 1, 1, 1], r 2 =
+                   ⊤
+[3, 0, 0, 2] and r 3 = [1, 3, 6, 0]. They form a basis of the row space that is a sub-
+space of Rn = R4 . The null space has 1 vector with basis r ns = [−2/3, 4/9, −1/9, 1].
+Now, vectors r 1 , r 1 , r 1 and r ns form a basis of the space Rn = R4 .
+Matrix A has 4 column vectors; a⊤                  ⊤               ⊤
+                                   1 = [2, 3, 1], a2 = [1, 0, 3], a3 = [1, 0, 6] and
+ ⊤
+a4 = [1, 2, 0]. vectors a2 and a3 are linear dependent, thus, vectors a1 , a2 and
+a4 form a basis of the column space that is a subspace of Rm = R3 , and the left
+null space only contains vector alns = [0, 0, 0].
+
+
+1.8      Applications
+
+Let us see some applications where these concepts appear.
+
+
+1.8.1    Linear equations
+
+Let us consider the Figure 3, where we have plotted the orthogonality of the
+subspaces and we consider the system of equations:
+
+        Ax = b                                                               (1.8.1)
+
+
+                                        15
+                 Figure 3: Fundamental theorem of linear algebra.
+
+
+where A∈Rm×n , x∈Rn and b∈Rm .
+We can observe that the action of matrix A over a vector xr in the RS is to
+transform it in a vector b in the CS.
+On the other hand, we can observe that the action of matrix A over a vector
+xn in the NullSpace is to transform it in vector 0.
+An interesting property is that a vector xp = xr + xns that is the sum of a
+vector in the RS and a vector of the NullSpace goes to the CS, since Axp =
+A(xr + xns ) = Axr + Axns = b + 0 = b.
+The conclusion of these facts are that the particular solution of Ax = b is
+xr , the homogeneous solution of Ax = b is xns , and the general solution
+of Ax = b is xp = xr + xns .
+
+
+1.8.2    Least squares equations
+
+Let us consider the Figure 4, where we have plotted the orthogonality of the
+subspaces and we consider the system of equations:
+
+        Ax = b
+
+where A∈Rm×n , x∈Rn and b∈Rm . The objective is to find a vector x that
+satisfies the equation Ax = b. Let us consider three cases:
+
+
+
+
+                                       16
+                  Figure 4: Least squares equations.
+
+
+• Undetermined case: This is the case in which there are more vari-
+  ables than equations, meaning m < n. In this case, there exists infinity
+  solutions, since x̂ = {x: Ax=b} = {xr + xns } with xr ∈RS(A) and
+  xns ∈N ull(A). This is because rank(A)=r=m, so the Null(A⊤ ) only con-
+  tains the 0 vector and Null(A) has n-m=n-r vectors (assuming that A is
+  full row rank).
+  The best that can be done is to find the vector x in the RS which when
+  transformed by matrix A is closest to CS, it is to say:
+
+        minimize ∥x∥22
+        subject to Ax = b                                           (1.8.2)
+        variable   x
+
+  This vector is given (we will prove it in TOML-MIRI when we will study
+  non-linear optimization) by the right pseudo-inverse:
+
+       A† = A⊤ (AA⊤ )−1                                             (1.8.3)
+
+  We call it right pseudo-inverse because AA† =I (A† is on the right). We
+  will come back to a derivation of the left pseudo-inverse when we study
+  the singular value decomposition (SVD).
+
+  Example 1.13 (Undertermined case) Let us consider the following lin-
+  ear system:
+                          ⎡ ⎤
+                 [︃     ]︃ x1   [︃ ]︃
+                   2 1 0 ⎣ ⎦      3
+        Ax = b →           x2 =
+                   1 3 1          1
+                           x3
+
+  A null space vector is xns = [1, −2, 5]. The solution xr is given by xr =
+
+
+                                  17
+  A⊤ (AA⊤ )−1 b:
+                              ⎡         ⎤               ⎡     ⎤
+                               2       1 [︃           ]︃ 2   1    [︃ ]︃
+                                            2   1   0 ⎣         −1 3
+         xr = A⊤ (AA⊤ )−1 b = ⎣1       3⎦ (              1   3 )
+                                                              ⎦
+                                            1   3   1               1
+                               0       1                 0   1
+
+  and:
+              ⎡     ⎤                                  ⎡    ⎤
+               2   1 [︃                ]︃ [︃ ]︃          46
+                       11/30    −1/6        3
+         xr = ⎣1   3⎦                           = 1/30 ⎣ −2 ⎦
+                        −1/6     1/6        1
+               0   1                                    −10
+
+  and a solution of this linear system of equations is in the form of x =
+  xr + cxns , with c any real constant.
+
+• Unique solution: This is the case in which there are the same number
+  of variables as equations, meaning m = n. In this case, there are several
+  possibilities:
+    – If matrix A is non-singular (invertible), then there exists a unique
+      solution:
+
+              x̂ = A−1 b                                                  (1.8.4)
+
+    – If matrix A is singular (non-invertible), then rank(A)=r < (m=n),
+      and there exists infinity number of solutions given by:
+
+              x̂ = A† b + xns                                             (1.8.5)
+
+         with xns ∈N S(A), and A† the pseudinverse of A.
+• Overdetermined case: This is the case in which there are fewer variables
+  than equations, meaning m > n. In this case, there exists no solution.
+  The best that can be done is to make the error e=Ax − b as small as
+  possible. Since Ax can never leave the CS, we have to find a vector x
+  such that Ax is closest to b, or in other words this point is the projection
+  p= Ax̂ of b in the CS. In this way e=b-p is the smaller length if:
+
+          minimize ∥Ax − b∥22
+                                                                          (1.8.6)
+          variable x
+
+  This vector is given (we will prove it in TOML-MIRI) by the left pseudo-
+  inverse
+
+         A† = (A⊤ A)−1 A⊤                                                 (1.8.7)
+
+  We call it left pseudo-inverse because A† A= I (A† is on the left). How-
+  ever, we can derive it from the interpretation of Figure 3. We have to
+
+
+                                   18
+     note that e=b-p is perpendicular to the CS, so e is in the left null space.
+     Then:
+            A⊤ e = A⊤ (Ax − b) = 0                                             (1.8.8)
+     From here, we obtain:
+            A⊤ Ax = A⊤ b                                                       (1.8.9)
+     And finally:
+            x̂ = (A⊤ A)−1 A⊤ b = A† b                                      (1.8.10)
+     We will come back to a derivation of the left pseudo-inverse when we study
+     the singular value decomposition (SVD).
+
+     Example 1.14 (Overdetermined case) Let us consider the following
+     linear system:
+                    ⎡   ⎤      ⎡ ⎤
+                     2 1 [︃ ]︃  3
+                           x
+           Ax = b → ⎣1 3⎦ 1 = ⎣1⎦
+                           x2
+                     0 1        4
+     The solution xr is given by x= (A⊤ A)−1 A⊤ b:
+                                            ⎡   ⎤                        ⎡ ⎤
+                                 [︃       ]︃ 2 1     [︃                ]︃ 3
+                  ⊤   −1   ⊤       2 1  0          −1 2           1   0 ⎣ ⎦
+          x = (A A) A b = (                 ⎣1 3 )
+                                                ⎦                         1
+                                   1 3 1               1          3   1
+                                             0 1                          4
+     and:
+                                                ⎡ ⎤
+               [︃             ]︃ [︃           ]︃ 3        [︃ ]︃
+                 11/30   −1/6 2        1    0 ⎣ ⎦           27
+            x=                                   1 = 1/30
+                  −1/6    1/6      1   3    1               15
+                                                 4
+     and a solution of this linear system of equations is in the form of x =
+     1/30[27, 15] = [0.9, 0.5].
+
+
+2    Eigenvectors and eigenvalues
+An eigenvector of a linear transformation is a nonzero vector that changes at
+most by a scalar factor when that linear transformation is applied to it. The
+corresponding eigenvalue λ is the factor by which the eigenvector is scaled. The
+eigenvector points in a direction in which the vector is scaled by the trans-
+formation and the eigenvalue is the factor by which the vector is scaled. A
+main application is the decomposition of a matrix by using eigenvectors and
+eigenvalues (called de eigenvector decomposition, EVD). Other applications ap-
+pear when solving differential equations, dimensionality reduction (e.g. princi-
+pal component analysis, PCA), denoising (e.g. eigenfaces), data compression,
+spectral graph theory, signal reconstruction, etc. The EVD (applied to squared
+matrices) is connected to another important decomposition called singular value
+decomposition (SVD) when the matrices are not-squared.
+
+
+                                           19
+2.1    Linear transformations
+
+If T is a linear transformation on a vector space over itself, i.e., T :V → V , an
+eigenvector is a vector that satisfies:
+
+      T (v) = λv                                                           (2.1.1)
+
+Assuming that the linear transformation (as seen in previous lectures) can be
+related to a matrix. Let, then, A∈Rn×n be a square real matrix (although the
+matrix A has real components, in this section is better to think that vectors can
+have complex coefficients and that scalars are also in general complex numbers).
+A non zero vector v is an eigenvector, and the scalar λ is an eigenvalue of
+the matrix A when:
+
+      Av = λv                                                              (2.1.2)
+
+Eigenvalues must fulfill the condition: Av − λv = (A − λI)v = 0. As v is
+non-zero, this is only possible if rank(A − λI) < n, which is equivalent to the
+condition det(A − λI) = 0. This determinant is in general a polynomial on
+λ of degree n, meaning that has n complex roots (if we count the multiplicity
+of roots). For very small matrices we can find the roots of this polynomial
+to compute eigenvalues. For larger matrices, there are more computationally
+efficient methods.
+Once we know the eigenvalues, we can find the associated eigenvectors by solving
+the undetermined system of linear equations (A − λI)v = 0. We can set, for
+instance, the condition ∥v∥ = 1 to find unique solutions (up to the sign).
+In the case of eigenvalues of multiplicity larger than 1, we can have several
+linearly independent associated eigenvectors. The dimension of the generated
+subspace must be less or equal to the multiplicity of the root. When this di-
+mension is strictly lower than the multiplicity of λ, we say that the matrix is
+defective. You can find detailed discussions on this in any text on linear al-
+gebra. We will be interested mainly in symmetric matrices, which are never
+defective.
+
+
+2.2    Diagonalization and eigendecomposition
+
+Let A be a square n×n matrix with n linearly independent eigenvectors vi
+(where i=1, . . . , n). Then A can be factorized as:
+
+      A = VΛV−1                                                            (2.2.1)
+
+where V is a squared n×n matrix with column vectors vi (eigenvectors), and
+Λ is a squared n×n diagonal matrix whose diagonal elements Λii =λi (are the
+
+
+
+
+                                       20
+eigenvalues). This is easy to see since if v i an eigenvector:
+      Av = λv
+      AV = VΛ                                                            (2.2.2)
+                     −1
+       A = VΛV
+See the following property. The linearly independent eigenvectors associated
+with the eigenvalues different of 0, form the range(A) or Image(A), and they
+are the basis of the column space CS(A). The linearly independent eigenvectors
+associated with eigenvalues equal to 0, form the basis of the null space of A.
+The eigendecomposition has many applications. An interesting one is to solve
+the power of a matrix:
+      A2 = AA = VΛV−1 VΛV−1 = VΛ2 V−1                                    (2.2.3)
+Using recursivity:
+      Ai = AAi−1 = VΛV−1 VΛi−1 V−1 = VΛi V−1                             (2.2.4)
+Inverting a matrix follows a similar approach:
+      A−1 = (VΛV−1 )−1 = VΛ−1 V−1                                        (2.2.5)
+
+
+2.3    Some important types of matrices
+   • An square n×n matrix Λ with 0 off-diagonal elements is a diagonal ma-
+     trix. The product Λv produces a stretching (or directional scaling) of
+     the different components of the vector v according to the corresponding
+     values of the diagonal. If some components of the diagonal of Λ are zero,
+     the product collapses to zero the corresponding components of v. The
+     inverse of Λ is obtained by simply inverting the diagonal elements (if any
+     of those elements is zero, then the matrix is not invertible).
+   • A square matrix Q∈Rn×n with columns and rows that are orthonormal
+     vectors (i.e. orthogonal and with norm 1) is called an orthonormal
+     matrix, or very often simply orthogonal matrix, as we will assume the
+     norm 1 condition, sometimes also called Q∈O(n) orthogonal group of
+     Rn×n matrices. The product Qv produces a rotation, a reflection, or a
+     combination of both operations (called roto-reflection), on the vector v.
+      Orthonormal matrices are always invertible and Q−1 =Q⊤ and they pre-
+      serve scalar products and then angles, i.e., < Qu, Qv >= (Qu)⊤ (Qv) =
+      u⊤ Q⊤ Qv = u⊤ v = < u, v >.
+   • A square matrix A that fulfills A=A⊤ is a symmetric matrix. Sym-
+     metric matrices satisfy the following properties: i) sum (or difference) of
+     symmetric matrices is symmetric, ii) if A and B are symmetric, then AB
+     is symmetric only if AB=BA; iii) if A−1 exists, then it is symmetric if
+     and only if A is symmetric;
+
+
+                                        21
+• If v is a column vector of V , the square n×n matrix vv ⊤ is a matrix (do
+  not confuse with the scalar product v ⊤ v which is a number) of rank 1.
+  A special case is when v∈Rn ∈V and u∈Rm ∈U , and matrix A∈Rm×n is
+  the matrix of the linear mapping. Then, matrix A is called a dyads if
+  A = uv ⊤ (is a rank-1 matrix). If a dyads operate in a vector x, the
+  resulting vector has direction u, i.e., Ax = (uv ⊤ )x = u(v ⊤ x) = αu, a
+  vector in direction u with scaling α = v ⊤ x.
+• We define a projection as a linear operator P :V → V such that P 2 =P .
+  If the vector space V is finite-dimensional, a square matrix P is called
+  projection matrix if P 2 =P . Moreover, if P is real, and P 2 =P =P ⊤ then
+  P is called a orthogonal projection matrix. For the general case of a
+  non-unitary vector v, the projection matrix is defined as:
+
+                                  vv ⊤
+        P = v < v, v >−1 v ⊤ =                                           (2.3.1)
+                                  ∥v∥22
+  so the projection of a vector t on the vector v, would be given by:
+
+                                          vv ⊤
+        t̂ = P t = v < v, v >−1 v ⊤ t =         t                        (2.3.2)
+                                          ∥v∥22
+
+  Example 2.1 (Projection matrix for a vector) We want to project
+  vector t= [1, 2] over vector v= [2, 1]. We first obtain the projection matrix
+  P:
+                             [︃ ]︃           [︃     ]︃
+                1     ⊤     1 2 [︁     ]︁ 1 4 2
+        P =         vv =           2 1 =
+             ∥v∥22          5 1            5 2 1
+  Then, now, the projection of vector t on the vector v, would be given by:
+                    [︃   ]︃ [︃ ]︃     [︃ ]︃ [︃ ]︃
+                  1 4 2 1           1 6       1.2
+       t̂ = P t =                 =        =
+                  5   2 1     2     5   4     0.8
+
+  and the projected vector will be t̂ = [1.2, 0.8]. We can observe that the
+  matrix P satisfies property P 2 =P =P ⊤ :
+               [︃     ]︃ [︃    ]︃      [︃        ]︃    [︃   ]︃
+             1 4 2 1 4 2             1 20 10          1 4 2
+       P2 =                       =                 =
+             5 2 1 5 2 1            25 10 5           5 2 1
+  Finally, observe that since we project a vector over a vector, matrix P has
+  rank r = 1.
+
+  In the special case in which v is unitary, < v, v >=1, and P = vv ⊤ . The
+  projection of vector t on the unitary vector v will then be t̂ = P t = vv ⊤ t.
+  In the case that the we want to project a vector t on a subspace generated
+  by the matrix A, then the projection matrix will be given by:
+
+        P = A(A⊤ A)−1 A⊤                                                 (2.3.3)
+
+
+                                    22
+      and the projection of the vector t on the subspace generated by the matrix
+      A will be given by:
+
+            t̂ = A(A⊤ A)−1 A⊤ t                                               (2.3.4)
+
+      Example 2.2 (Projection matrix for a matrix) We want to project
+      vector t= [1, 2] over the space generated by matrix:
+                 ⎡      ⎤
+                  2 1
+            A = ⎣1 3⎦
+                  0 1
+
+      The projection matrix P will be given P = A(A⊤ A)−1 A⊤ :
+               ⎡     ⎤             ⎡     ⎤                   ⎡                    ⎤
+                 2 1 [︃         ]︃ 2 1        [︃     ]︃        29            2 −5
+                         2 1 0 ⎣                2 1 0      1
+          P = ⎣1 3⎦ (               1 3⎦)−1             =    ⎣2             26 10 ⎦
+                         1 3 1                  1 3 1     30
+                 0 1                0 1                       −5            10 5
+
+      and we can observe that matrix P has rank r = 2 (the same as matrix A).
+
+
+2.4    An m×n matrix of rank r maps a sphere of dimension
+       n into an ellipsoid of dimension r
+
+A basic fact of linear algebra is the following: Assume that we have an m×n
+matrix A with rank(A)=r. Assume that we compute the products y = Ax,
+where x is an n-dimensional vector that lies in a sphere of radius 1 in the space
+Rn . Then the locus (set of points) of all the generated vector y lies in an ellipsoid
+of dimension r embedded in the space Rm .
+As an example, assume a 2×2 matrix A of rank 2. If we compute y = Ax
+for x = (cos(θ), sin(θ))⊤ with θ ∈ [0, 2π), the vector y will lie in an ellipsoid
+centered in the origin in R2 . If rank(A)=1, the ellipsoid will collapse one of its
+dimensions, resulting in a segment that crosses the origin.
+
+
+2.5    Matrix factorization
+
+In this course, we deal with two important matrix factorizations:
+
+   • S = QΛQ⊤ , for symmetric matrices.
+   • A = U ΣV ⊤ , Singular Value Decomposition (SVD) for general matrices.
+
+We are interested in the first factorization as covariance matrices are symmetric,
+and we are interested in the second factorization as it allows us to approximate
+clouds of points in high-dimensional spaces by clouds of points in lower dimen-
+sional spaces.
+
+
+                                         23
+2.6      Diagonalization of symmetric matrices
+
+Assume that S is an n×n symmetric matrix, i.e. S = S ⊤ , i.e., aij = aji ∀i, j.
+Symmetric matrices have the following properties: i) S 1 +S 2 (sum) is symmetric
+if S 1 , S 2 are symmetric, ii) S 1 S 2 (product) is not necessarily symmetric even
+if S 1 , S 2 are symmetric, iii) if S −1 exists, is symmetric if and only if S 1 is
+symmetric.
+The spectral theorem tells us when a linear operator or matrix can be diag-
+onalized. In the case of S (symmetric matrix), the finite-dimensional spectral
+theorem says that any symmetric matrix S whose entries are real can be diag-
+onalized by an orthogonal matrix (so, the eigenvectors are orthonormal).
+
+   • S has n real eigenvalues, λi , (counting possible multiplicities)
+   • The n associated eigenvectors, qi are orthonormal.
+   • These matrices are not defective (defective means that rank(A)=r<n, then
+     rank(S)=n) if they are positive definite.
+
+Let us prove it for the case in which the matrix has non-repeated eigenvalues.
+This result can be extended for the repeated eigenvalues case by using continuity
+arguments.
+
+
+2.6.1     Eigenvectors are orthogonal
+
+Assume that Sv = λv and Su = µu different eigenvalues λ and µ. We have:
+        v ⊤ Su = µv ⊤ u                                                     (2.6.1)
+and
+        u⊤ Sv = λu⊤ v                                                       (2.6.2)
+but u⊤ Sv = v ⊤ S ⊤ u = v ⊤ Su as S is symmetric, and u⊤ v = λv ⊤ u, which
+implies λu⊤ v = µu⊤ v, and from this we get u⊤ v = 0 (eigenvectors are orthog-
+onal).
+
+
+2.6.2     Eigenvalues are real
+
+Assume that λ is a complex eigenvalue. As S is real, λ∗ (i.e. its complex
+conjugate) must also be an eigenvalue:
+        Sv = λv                                                             (2.6.3)
+and:
+        Sv ∗ = λ∗ v ∗                                                       (2.6.4)
+
+
+                                        24
+Then we have:
+
+      v ∗T Sv = λv ∗T v = λ                                                 (2.6.5)
+
+since eigenvectors v are orthonormal (v ∗ v = 1), and:
+
+      v T Sv ∗ = λ∗ v T v ∗ = λ∗                                            (2.6.6)
+
+But λ∗ = v T Sv ∗ = (v T Sv ∗ )⊤ = v ∗T Sv = λ, meaning λ = λ∗ .
+As a consequence, we can write S as: S=QΛQ⊤ , where Q is an n×n matrix
+with columns the eigenvectors of S, Q=[q1 ,. . . , qn ], and Λ is a diagonal matrix
+with diagonal elements Λi,i = λi .
+An alternative way of expressing this is by the formula: S = i λi qi qi t . Recall
+                                                                 ∑︁
+that the terms qi qi t are rank 1 matrices.
+If rank(S)=n, the eigenvalues λi must be different from 0 (if not, the corre-
+spondent eigenvector qi would belong to the null space and rank(S)<n). In this
+                                                               −1    −1 ⊤
+case,
+∑︁ 1 S has⊤an inverse, which is also a symmetric matrix, and: S =QΛ Q =
+   i λ i qi qi .
+
+
+Example 2.3 (Symmetric matrices) Let us assume the following symmet-
+ric matrix A:
+           ⎡       ⎤
+            2 1 0 1
+           ⎢1 3 4 5⎥
+     A=⎢           ⎥
+           ⎣0 4 1 4⎦
+            1 5 4 4
+
+Then the eigendecomposition of matrix A will A = QΛQ⊤ , with:
+          ⎡                                  ⎤
+            −0.128 −0.978 −0.155 −0.051
+          ⎢−0.596 0.021       0.553 −0.582⎥
+     Q=⎢  ⎣−0.463 0.204 −0.812 −0.29 ⎦
+                                             ⎥
+
+            −0.643 0.028      0.103    0.758
+
+and
+        ⎡                                    ⎤
+         11.712        0.0     0.0      0.0
+        ⎢ 0.0          1.95    0.0      0.0 ⎥
+      Λ=⎢                                    ⎥
+        ⎣ 0.0           0.0   −2.228    0.0 ⎦
+           0.0          0.0    0.0     −1.434
+
+and as we can observe, all eigenvalues are real, and the eigenvectors are oth-
+ornormal; q ⊤               ⊤                           ⊤
+            i q i = 1 and q i q j = 0 with i̸=j, e.g. q 0 q 0 = [−0.128, −0.596,
+−0.463, −0.643] [−0.128, −0.596, −0.463, −0.643]= 1.0 and q ⊤
+                 ⊤
+                                                                  0 q 2 = [−0.128,
+−0.596, −0.463, −0.643]⊤ [−0.155, 0.553, −0.812, 0.103]= 0.0.
+Observe also that the matrix Q is a rotation matrix; for example Qq i = [0, . . . ,
+1, . . . , 0], a unitary vector with a 1 at position i, 0’s in the remainder.
+
+
+                                        25
+2.7    Positive definite matrices
+
+When all eigenvalues S are positive, we say that the symmetric matrix is pos-
+itive definite. In this case, S −1 is also a symmetric positive definite matrix.
+These matrices somehow play the role of positive numbers in the matrix world.
+For example, the variance-covariance matrix Σ = E[(X1 , .., Xn )(X1 , ..., Xn )⊤ ]
+of multivariate Gaussian distributions is a positive definite matrix. The inverse
+of the covariance matrix, called precision matrix is also positive definite.
+
+   • An n×n symmetric real matrix A is said to be positive definite, PD if
+
+           x⊤ Ax>0                                                           (2.7.1)
+
+      for all non-zero vectors x∈Rn and it is said negative definite, ND if
+
+           x⊤ Ax<0.                                                          (2.7.2)
+
+   • An n×n symmetric real matrix A is said to be positive semi-definite,
+     PSD if
+
+           x⊤ Ax≥0                                                           (2.7.3)
+
+      x⊤ Ax≥0 for all non-zero vectors x∈Rn and it is said negative semi-
+      definite, NSD if
+
+           x⊤ Ax≤0                                                           (2.7.4)
+
+   • An n×n symmetric real matrix which is neither positive semi-definite nor
+     negative semi-definite is called indefinite.
+   • A matrix A is positive (negative) definite if and only if all of its eigenvalues
+     are >0 (<0).
+   • A matrix A is positive (negative) semi-definite if and only if all of its
+     eigenvalues are ≥0 (≤0).
+
+You can find several interesting properties such as: i) if A and B are positive
+definite matrices, then the sum A + B is a positive definite matrix; or ii) if A
+is a positive definite matrix, then the inverse A−1 is a positive definite matrix.
+Finally, an interesting result is the following: let be a n×n A matrix. The matrix
+S=A⊤ A is positive definite if A is invertible, and therefore S has orthonormal
+eigenvectors and positive eigenvalues. The proof is quite simple:
+
+      x⊤ A⊤ Ax = (Ax)⊤ Ax = ∥Ax∥ > 0                                         (2.7.5)
+
+The last statement ∥Ax∥ > 0 is true since ∥Ax∥ > 0 for any x if A is invertible
+since Az ̸= 0
+
+
+                                        26
+Example 2.4 (Positive definite matrices) Let us consider matrices A, B,
+C and D. Check positive definiteness.
+         ⎡            ⎤         ⎡         ⎤
+          −1 1 −1                −3 0 −1
+    A = ⎣ 1 0 1 ⎦ ; B = ⎣ 0 −5 −2⎦
+           0 1 1                 −1 −2 −3
+
+           ⎡              ⎤       ⎡             ⎤
+          3        1    −1         3      1   −1
+      C=⎣ 0        4    −2⎦ ; D = ⎣0      4   −2⎦
+         −1       −2    3          3      4   −3
+
+Let us obtain the eigenvalues. The eigenvalues of matrix A are λ=[−1.879,
+0.347, 1.532]. The matrix is neither positive or negative definite. The eigenval-
+ues of matrix B are λ=[−1.319, −3.358, −6.323] are all negative, and then the
+matrix is negative definite. The eigenvalues of matrix C are λ=[1.097, 3.194,
+5.709] are all positive, and then the matrix is positive definite. The eigenval-
+ues of matrix D are λ=[0.0, 0.586, 3.414] are all positive or equal to zero, and
+then the matrix is positive semidefinite. Moreover, since there are one eigen-
+value equal to zero, the rank of this matrix is 2. On the other hand, the rank of
+matrices A, B, C is 3.
+
+
+3     Useful properties of matrices
+
+3.1    Geometric interpretation for symmetric matrices: Ro-
+       tation/Reflection, Stretching, Rotation/Reflection−1
+
+We know that matrix multiplication can be interpreted as linear map com-
+position, meaning that the geometric interpretation of Sv = QΛQ⊤ v for an
+arbitrary vector v is:
+
+    • Rotate the coordinate system to align it with the set of vectors qi which
+      form the columns of the matrix Q. The vector v in this new coordinate
+      system has the expression Q⊤ v (note that the vectors qi expressed in the
+      new coordinate system have the expression Q⊤ qi = [0, ..., 1, ...0] as we
+      expect).
+    • Stretch each component of the resulting vector Q⊤ v according with the
+      diagonal elements of the matrix Λ, obtaining the vector ΛQ⊤ v. This
+      stretching causes in general a change of direction of the vector, but if v is
+      aligned with a vector qi , it does not change its direction.
+    • Apply the inverse rotation to the coordinate system. If we express the
+      resulting ΛQ⊤ v in this new coordinate system we obtain QΛQ⊤ v.
+
+
+
+                                        27
+           Figure 5: Symmetric matrix applied to a disc of radius 1.
+
+For instance, a positive definite matrix S will map an n-dimensional sphere of
+radius 1 to an n-dimensional ellipsoid with axis given by its eigenvectors qi , and
+axis lengths given by its eigenvalues λi , (think on this, Figure 5).
+
+
+3.2    Basic operations with vectors and matrices
+
+First, some matrix manipulations typically appear when working with differen-
+tiation.
+
+   • (AB)−1 = B−1 A−1
+   • (AB)⊤ = B⊤ A⊤
+   • (a⊤ Ab)⊤ = b⊤ A⊤ a
+   • a⊤ b = b⊤ a
+   • (A + B)C = AC + BC
+   • AB ̸= BA
+   • (a + b)⊤ C = a⊤ C + b⊤ C
+
+The Hadamard product (also known as the element-wise product, entry-wise
+product, or Schur product) returns a matrix of the multiplied corresponding
+elements. It is defined with the symbol ⊙ (sometimes also with symbol ◦):
+      (A ◦ B)ij = (A ⊙ B)ij = (A)ij (B)ij .                                 (3.2.1)
+
+
+                                        28
+The Hadamard product appears, for example, in the neural network backprop-
+agation algorithm.
+
+Example 3.1 (Hadamard product of matrices) Consider matrices A and
+B.
+        ⎡        ⎤      ⎡           ⎤
+         2 1 −2          −3 0 −1
+    A = ⎣1 0 2 ⎦ ; B = ⎣ 2 −5 −2⎦
+         0 1 3           −1 2     4
+Its Hadamard product is given by:
+              ⎡           ⎤ ⎡                 ⎤ ⎡                ⎤
+                2 1 −2          −3     0   −1     −6      0   2
+      A ⊙ B = ⎣1 0 2 ⎦ ⊙ ⎣ 2          −5   −2⎦ = ⎣ 2      0   −4⎦
+                0 1 3           −1     2    4      0      2   12
+
+
+3.3    Derivatives with vectors and matrices
+
+Let us assume vector x and we want to obtain vector derivatives over the func-
+tion f(x) of the form df (x)/dx. We use the denominator layout (meaning that
+f ⊤ and x)
+
+   • f(x) = x⊤ a −→ df (x)/dx = a
+   • f(x) = x⊤ A −→ df (x)/dx = A
+   • f(x) = Ax −→ df (x)/dx = A⊤
+   • f(x) = x⊤ x −→ df (x)/dx = 2x
+   • f(x) = x⊤ Ax −→ df (x)/dx = (A + A⊤ )x.
+      For deriving (x⊤ Ax) with respect to x, we first fix one of the x and then
+      the other (e.g. fix one x and substitute the other x by y and derive with
+      respect y, and then repeat exchanging the order):
+      d(y⊤ Ax)/dy +d(x⊤ Ay)/dy = Ax+(x⊤ A)⊤ = Ax+A⊤ x = (A+A⊤ )x.
+   • f(x) = x⊤ Ax −→ df (x)/dx = 2Ax          if A is symmetric
+   • f(X) = a⊤ X⊤ b −→ df (X)/dX = ba⊤
+   • f(X) = a⊤ Xb −→ df (X)/dX = (ba⊤ )⊤ = ab⊤
+   • f(X) = (Xa)⊤ C(Xb) −→ df (X)/dX = CXba⊤ + C⊤ Xab⊤
+      We proceed as before, with a dummy variable:
+      d((Ya)⊤ C(Xb))/dY + d((Xa)⊤ C(Yb))/dY and proceed.
+   • f(X) = det(AXB) −→ df (X)/dX = det(AXB)X−⊤
+   • f(X) = ln(det(X)) −→ df (X)/dX = X−⊤
+
+
+                                      29
+3.4      The trace operator
+
+For a square matrix n×n A we define the trace as the sum of the elements of
+its diagonal:
+                   n
+                  ∑︂
+        tr(A) =         akk = a11 + a22 + · · · + ann                                      (3.4.1)
+                  k=1
+
+The trace is an interesting operator. Remember that linear transformations are
+represented as different matrices depending on the basis you take, but regardless
+of the basis they will have the same trace (and the same determinant), so these
+operators, trace and determinant, are invariant with respect to changing the
+basis.
+The trace of the n×n I identity matrix is the dimension of the space, namely
+n: tr (In ) = n. The following relationships are satisfied:
+        tr(A + B) = tr(A) + tr(B)
+                                                                                           (3.4.2)
+           tr(cA) = c tr(A)
+for all square matrices A and B, and all scalars c. Moreover:
+       tr(A) = tr AT
+                 (︁ )︁
+                                                                                           (3.4.3)
+
+
+3.4.1     The trace operator is cyclic
+
+Let A and B be general non-square matrices of sizes n×m and m×n. The
+diagonal elements of P = AB can be found as:
+             ∑︂
+     pkk =         aki bik                                     (3.4.4)
+              i=1,...,m
+
+while that for Q = BA we have:
+             ∑︂
+      qii =       aik bki                                                                  (3.4.5)
+             k=1,...,n
+
+We have then
+                        ∑︂      ∑︂                     ∑︂       ∑︂
+        tr(AB) =                         aik bki =                        aki bik = tr(BA) (3.4.6)
+                    k=1,..,n i=1,...,m               i=1,..,m k=1,...,n
+
+If we have now three arbitrary matrices of the right sizes to produce a square
+matrix in its product BAC we have:
+        tr(BAC) = tr((BA)C) = tr(C(BA)) = tr(CBA)                                          (3.4.7)
+Moreover for real column vectors a ∈ Rn and b ∈ Rn , the trace of the outer
+product is equivalent to the inner product:
+     tr baT = aT b
+       (︁    )︁
+                                                                     (3.4.8)
+
+
+                                                30
+3.4.2        The trace of a matrix is the sum of its eigenvalues counting
+             multiplicities
+
+As we know, the eigenvalues λk are the solutions of the equation:
+        det(A − λI) = (−1)n λn + (−1)n−1 tr(A)λn−1 + ... = 0             (3.4.9)
+The eigenvalues λk are the roots of the polynomial in λ, meaning that we have:
+
+
+        (−1)n (λ − λ1 )(λ − λ2 )... = 0                                 (3.4.10)
+and from this we obtain:
+      ∑︂
+         λk = tr(A)                                                     (3.4.11)
+         k
+
+
+Another way of looking at this property is to use the property that the trace is
+cyclic applied to the EVD (eigenvalue decomposition of A).
+
+                                                        ∑︂
+        tr(A) = tr(V ΛV −1 ) = tr(V −1 V Λ) = tr(Λ) =        λk         (3.4.12)
+                                                        k
+
+
+Example 3.2 (Symmetric matrices) Let us assume the following symmet-
+ric matrix A:
+           ⎡           ⎤
+            2 1 0 1
+           ⎢1 3 4 5⎥
+     A=⎢   ⎣0 4 1 4⎦
+                       ⎥
+
+            1 5 4 4
+                                                                       ∑︁
+The eigenvalues are λ=[11.712, 2.228, 1.95, 1.434]. We can observe that i λi =
+11.712 + 1.95 + (−2.228) + (−1.434)= 10.0 and that tr(A) = 2 + 3 + 1 + 4 = 10
+
+
+3.4.3        Derivatives of a trace
+
+Let A∈Rn×m and X∈Rm×n matrices. Then:
+         d           d
+           tr(AX) =    tr(XA) = A⊤                                      (3.4.13)
+        dX          dX
+Moreover, if A, X∈Rn×m :
+         d              d
+           tr(AX ⊤ ) =    tr(X ⊤ A) = A                                 (3.4.14)
+        dX             dX
+Then, assuming correct matrices sizes A, B, X:
+         d            d
+           tr(AXB) =    tr(BAX) = (BA)⊤                                 (3.4.15)
+        dX           dX
+
+                                          31
+We follow as with the derivatives of matrices without the trace: for deriving
+(X ⊤ AX) with respect to X, we first fix one of the X and then the other (e.g.
+fix one X and substitute the other X by Y and derive with respect Y , and
+then repeat exchanging the order):
+
+  d               d              d
+    tr(X ⊤ AX) =    tr(Y ⊤ AX)+    tr(X ⊤ AY ) = (A + A⊤ )X (3.4.16)
+ dX              dY             dY
+Using these rules, we can obtain the derivative of more complex trace expres-
+sions.
+
+
+3.5    Quadratic forms, sub-level sets, paraboloids and ellip-
+       soids
+
+A quadratic function has the form of
+                1 ⊤
+      f (x) =     x P x + b⊤ x + c                                        (3.5.1)
+                2
+where P is a n×n symmetric matrix, b and x are n-dim vectors, and c is a real
+number. Define now a α sub-level set Cα of a function f :Rn → R, as
+
+      Cα = {x∈dom{f }|f (x) ≤ α}                                          (3.5.2)
+
+Let us now remember the equation of an n-dim ellipsoid as
+
+                                x21   x22           x2n
+                                    +     + · · · +     =1
+                                a21   a22           a2n
+
+Thus, we can see that the α sub-level set of a quadratic form is an ellipsoid. In
+fact,
+
+      ϵ = {x|(x − xc )⊤ P −1 (x − xc ) ≤ 1}                               (3.5.3)
+
+where P is symmetric and positive definite, and the vector xc is the center
+of the ellipsoid. The matrix P defines how far the ellipsoid extends in every
+direction from xc (directions
+                            √given by eigenvectors of P ), and the length of the
+semi-axes of ϵ are given by λi (with λi the eigenvalues of P .
+If we consider now a new dimension xn+1 , and make
+
+                x21   x22           x2n
+      xn+1 =        +     + · · · +                                       (3.5.4)
+                a21   a22           a2n
+
+we obtain the equation of a paraboloid.
+
+
+
+
+                                           32
+3.6      Multivariate Gaussian distribution
+
+Recall that we say that X follows a multivariate gaussian distribution of pa-
+rameters µ and Σ, where µ∈Rn and Σ is a positive definite matrix, if the joint
+probability density function of X is of the form:
+                            1              1         ⊤    −1
+        fX (x) =                       e− 2 (x−µ) Σ            (x−µ)
+                                                                                                          (3.6.1)
+                      (2π)n/2 |Σ|1/2
+
+Many times, we will express the multivariate gaussian distribution as:
+p{x|µ, Σ}= N {x|µ, Σ}, or X ∼ N {µ, Σ}.
+
+
+3.6.1       The quadratic form 12 (x − µ)⊤ Σ−1 (x − µ)
+
+If S is a definite positive matrix, then the graph of the quadratic form
+                 1
+        z=         (x − µ)⊤ Σ−1 (x − µ)                                                                   (3.6.2)
+                 2
+is a n + 1 dimensional paraboloid that takes always values of z which are non-
+negative and the only point at which z = 0 is µ.
+
+                                                                                                           − 21
+                                                                                                  [︃ 3       ]︃
+Example 3.3 (Precission matrix Σ−1 ) For instance, let Σ =                                          2
+                                                                                                            3 .
+                                                                                                   − 21     2
+To diagonalize Σ, we find the eigenvalues and orthonormal eigenvectors:
+         [︄ √      √ ]︄ [︃   ]︃ [︄ √2   √ ]︄
+              2      2                    2
+            2   −   2     1 0       2   √2
+     Σ = √2       √                 √
+                    2     0 2 −       2   2
+            2     2                  2   2
+
+Meaning that:
+             [︄ √            √    ]︄ [︃        ]︃ [︄ √2        √     ]︄
+                       2
+                           −√ 22                                 2
+                                                                              [︃ 3   1
+                                                                                         ]︃
+            −1       √2
+                                       1   0        2√         √2               4    4
+        Σ        =                         1                              =     1    3        .
+                       2        2      0   2      − 22           2
+                                                                                4    4
+                      2      2                                  2
+
+
+Figure 6 we plot the 3-d parabole 12 (x − µ)⊤ Σ−1 (x − µ) for µ = [5, 5]⊤ :
+
+
+3.6.2       Isocontour lines (or α-level sets)
+
+We define the isocontour lines (or α-level sets) as the surface that represents
+points of a constant value within a volume of space:
+
+        (x − µ)⊤ Σ−1 (x − µ) = c2                                                                         (3.6.3)
+
+
+
+
+                                                     33
+        Figure 6: Paraboloid of a quadratic form given in the example.
+
+
+The equation of an ellipsoid centered at the origin and of semi-axis given by ai
+oriented according to the orthonormal vectors qi is
+           ⎡ 1                    ⎤
+              a21
+                     0 ... 0
+                     1
+           ⎢ 0           ... 0 ⎥  ⎥ ⊤
+      x⊤ Q ⎢        a22
+                                  ⎥Q x = 1                                (3.6.4)
+           ⎢
+           ⎣ 0       0 ... 0 ⎦
+                                1
+             . . . . . . . . . a2
+                                n
+
+
+
+If we plot the geometrical locus of the points that fulfill the equation:
+
+                            (x − µ)⊤ Σ−1 (x − µ) = c2
+
+we would obtain an n dimensional ellipsoid, centered at the point µ, with axis
+aligned with the (orthonormal) eigenvectors qi of
+                                                √ the matrix Σ, and with semi-
+axis length in the axis pointed by qi equal to c λi , where λi is the eigenvalue
+associated with qi .
+
+
+3.6.3   Isotropic Gaussian distribution
+
+The special case of having µ = 0 and Σ=I, we say that we have the multivariate
+standard normal distribution, and if Σ= σ 2 I, the distribution is called a isotropic
+Gaussian distribution, meaning that instead of ellipsoids, we will obtain hyper-
+spheres.
+
+
+                                         34
+           Figure 7: Ellipse equations in terms of a quadratic form.
+
+
+
+
+        Figure 8: Ellipse equations in terms of eigenvalue-eigenvectors.
+
+
+3.6.4   Datasets generated from independent sampling of a multivari-
+        ate Gaussian distribution
+
+If we perform a number of independent sampling of a multivariate Gaussian
+distribution, we will obtain clouds of points following the previously described
+ellipsoids:
+
+
+
+
+                                      35
+                     1 ⊤ −1
+3.6.5    Expressing 2n x Σ x as the trace of the product of two ma-
+         trices
+
+Assume that x is a vector with 0 mean (otherwise, we would use x−m instead).
+Scalars are special cases of square matrices, meaning that
+         1 ⊤ −1        1               1          1
+           x Σ x = tr( x⊤ Σ−1 x) = tr( xx⊤ Σ−1 ) = tr(Sn Σ−1 ) (3.6.5)
+        2n            2n              2n          2
+where S n = n1 xx⊤ is the sample covariance-variance matrix.
+
+
+3.6.6    The term |Σ|1/2
+
+The determinant    of a matrix is the product of its eigenvalues, meaning that
+|Σ|1/2 = ( i λi )1/2 .
+          ∏︁
+
+
+
+4       The Singular Value Decomposition (SVD)
+The diagonalization of a symmetric matrix is an extremely important result,
+that tells us that a symmetric matrix has as a ”core” a diagonal matrix with
+real diagonal elements. A similar result can be generalized for some other square
+matrices, but it cannot be applied to general (possibly non-square) matrices.
+There is however another factorization that can be applied to general matrices,
+even for non-square matrices which is known as Singular Value Decomposition
+(SVD), that has a lot of applications, including dimensionality reduction appli-
+cations (principal component analysis, PCA), obtaining the effective rank of a
+matrix (closest rank approximation of a matrix, e.g. Eckart-Young theorem),
+calculate the generalized inverse of a matrix (pseudoinverse), or in linear least
+squares problems.
+
+
+
+
+                                       36
+4.1    The SVD
+
+As we have seen if S is a symmetric n×n matrix, we can find a set of orthonormal
+vectors uk , which are left and right eigenvectors of S associated with the real
+eigenvalues λk , meaning that they fulfill the equations:
+      Sui = λi ui ,    i ∈ {1, .., n}                                       (4.1.1)
+The SVD generalizes these equalities for a general m×n (i.e. m rows and n
+columns) matrix A∈Rm×n of rank r≤min(m, n). The idea is to find orthonor-
+mal matrices U ∈Rm×m and V ∈Rn×n and diagonal matrix Σ∈Rm×n , such as
+A = U ΣV ⊤ (Figure 9). The elements of the diagonal matrix Σii = σi are real
+positive numbers called singular values and which we will order as a nonincreas-
+ing order σ1 ≥ σ2 ≥ ... ≥ σr ≥ 0.
+           [︃       ]︃
+              Σr 0
+      Σ=                                                                 (4.1.2)
+              0 0
+with Σr =diag(σ1 , . . . , σr ). For example, let us see the structure of matrix Σ
+for rank 1 and 2 in a 5×5 matrix:
+      ⎡                      ⎤      ⎡                    ⎤
+        σ1 0 0 0 0                    σ1 0 0 0 0
+      ⎢ 0 0 0 0 0 ⎥                 ⎢ 0 σ2 0 0 0 ⎥
+      ⎢                      ⎥      ⎢                    ⎥
+      ⎢ 0 0 0 0 0 ⎥ ; ⎢ 0                 0 0 0 0 ⎥                         (4.1.3)
+      ⎢                      ⎥      ⎢                    ⎥
+      ⎣ 0 0 0 0 0 ⎦                 ⎣ 0   0 0 0 0 ⎦
+         0 0 0 0 0                     0  0 0 0 0
+
+We can observe the similitude with the EVD (eigenvector decomposition) if put
+matrix V on the left and see that it is satisfied the following expression:
+      Av i = σi ui ,   i ∈ {1, .., n}                                       (4.1.4)
+Surprisingly, we will see that this decomposition is always possible. The values
+σk are called singular values of A, while the columns of U and V are called the
+left and right singular vectors of A.
+Remember that orthonormality of singular vectors mean that
+      U U ⊤ = U ⊤ U = Im                                                    (4.1.5)
+and
+      V V ⊤ = V ⊤ V = In                                                    (4.1.6)
+
+
+
+4.2    Relation between EVD (eigenvalue decomposition) and
+       SVD (singular value decomposition)
+
+Let us have a non-symmetric real matrix A∈Rm×n , and assume a SVD as
+A = U ΣV ⊤ . We can see that the following relationships hold:
+
+
+                                        37
+                     Figure 9: SVD for a m×n A matrix.
+
+
+   • Case A⊤ A: in this case we obtain a n×n square matrix and:
+
+          A⊤ A = (U ΣV ⊤ )⊤ U ΣV ⊤ = V Σ⊤ U ⊤ U ΣV ⊤ = V Σ⊤ ΣV ⊤ (4.2.1)
+
+      which says that A⊤ A has as eigenvectors the columns of V (right singular
+      vectors).
+   • Case AA⊤ : in this case we obtain a m×m square matrix and:
+
+        AA⊤ = U ΣV ⊤ (U ΣV ⊤ )⊤ = U ΣV ⊤ V ⊤ Σ⊤ U ⊤ = U ΣΣ⊤ U ⊤ (4.2.2)
+
+      which says that AA⊤ has as eigenvectors the columns of U (left singular
+      vectors).
+
+                                                 ⊤        ⊤
+Finally, we can observe that the eigenvalues
+                                           √ of A A and AA are the squares
+                              2
+of the singular values of A: σi =λi or σi = λi .
+
+
+4.3    Selecting the orthonormal basis in the SVD
+
+Let us see how do we select the orthonormal basis {u1 , . . . , um } for the range
+and the orthonormal basis {v1 , . . . , vn } for the domain (remember that we have
+a function f :Rn → Rm associated to matrix A∈Rm×n ). Let us assume that
+rank(A)=r; then, we will have:
+
+   • The left eigenvectors u1 , . . . , ur with ui ∈Rm are the orthonormal basis
+     of the Image(A)= CS(A);
+   • The left eigenvectors ur+1 , . . . , um with ui ∈Rm are the orthonormal basis
+     of the Left Null Space LNS(A)= NS(A⊤ );
+
+
+                                       38
+      U = [U r |Ũ m−r ] = [u1 , . . . , ur , ur+1 , . . . , um ]               (4.3.1)
+                            ⏞ ⏟⏟ ⏞ ⏞                ⏟⏟        ⏞
+                                        Ur                 Ũ r
+
+
+   • The right eigenvectors v1 , . . . , vr with vi ∈Rn are the orthonormal basis
+     of the row space RS(A);
+   • The right eigenvectors vr+1 , . . . , vn with vi ∈Rn are the orthonormal basis
+     of the null space NS(A);
+
+      V = [V r |Ṽ n−r ] = [v 1 , . . . , v r , v r+1 , . . . , v n ]           (4.3.2)
+                            ⏞ ⏟⏟ ⏞ ⏞                   ⏟⏟         ⏞
+                                       Vr                 Ṽ r
+                                                    ⊤
+We first assume symmetric matrix A A∈Rn×n , and its eigenvalue decomposi-
+tion (obtain its eigenvalues and eigenvectors since it is a squared n×n matrix):
+A⊤ A = V DV ⊤ , where D is a diagonal matrix with eigenvalues λi arranged in
+nonincreasing order (λ1 ≥ λ2 ≥ · · · ≥ 0), and the columns of V (eigenvectors of
+A⊤ A) are the orthonormal vectors {v1 , . . . , vn }. We can observe that vectors
+{v1 , . . . , vn } form a basis of Rn . Moreover, since our matrix A has rank(A)=r,
+the right singular vectors associated with non-zero singular values (there are r
+of them) form a basis of RS(A), while the n-r right singular vectors associated
+with the zero n-r singular values form a basis of the NS(A).
+Remember that the Im(A) = Range(A) = {y∈Rm |y = Ax f or some x∈Rn },
+and then:
+
+      (Avi )⊤ ·Avj = vi ⊤ (A⊤ Avj ) = vi ⊤ (λj vj ) = λj vi ⊤ vj = 0            (4.3.3)
+
+since vi and vj are orthonormal. Then Avi and Avj also are orthogonal (not
+necessarily orthonormal) and since Avi =σi ui and Avj =σj uj , then ui , uj are
+orthogonal. Then the eigenvectors of A⊤ A and their images under A form a
+basis for the range or image of A (or the column space CS(A)). We must check
+now that the vectors uk defined as Av k = σk uk are also orthonormal. We know
+that they are orthogonal. i.e.,
+
+              1 ⊤ ⊤              1 ⊤ ⊤                 σj2 ⊤
+ u⊤
+  i uj =           v i A Av j =       v i (A Av j ) =      v v j = 0, i ̸= j (4.3.4)
+             σi σj              σi σj                 σi σj i
+
+and we now note that (A⊤ Av j )= λj v j = σj2 v j , since v j is an eigenvector of
+A⊤ A. In order to complete the orthonormal bases of the range, we have to
+normalize, thus:
+               Avi            Avi      Avi Avi
+      ui =            = √︂           = √ =     ;                        1≤i≤r   (4.3.5)
+              ∥Avi ∥2      v ⊤ A⊤ Av    λi  σi
+                                   i            i
+
+
+and defining σi2 = λi , we obtain Avi = σi ui , with 1 ≤ i ≤ r, which shows that
+AV = U Σ taking ui the columns of U and vi the columns of V and Σii = σi .
+
+
+                                                     39
+Finally, we can express the matrix A as:
+                        [︃      ]︃ [︃      ]︃
+                           Σr 0       Vr
+      A = [U r , Ũ r ]                                                         (4.3.6)
+                           0 0        Ṽ r
+
+The dimensions of the matrices are U r ∈Rm×r , Ũ r ∈Rm×(m−r) , V r ∈Rn×r , and
+Ṽ r ∈Rn×(n−r) . Observe that the following conditions are satisfied:
+                    ⊤                                           ⊤
+  U⊤
+   r U r = Ir     Ũ r Ũ r = I m−r   U⊤
+                                       r Ũ r = 0   U⊤
+                                                     r U r + Ũ r Ũ r = I m
+                     ⊤                                          ⊤               (4.3.7)
+  V⊤
+   r V r = Ir     Ṽ r Ṽ r = I n−r   V⊤
+                                       r Ṽ r = 0   V⊤
+                                                     r V r + Ṽ r Ṽ r = I n
+
+
+Example 4.1 (SVD example) Let’s calculate the SVD for matrix A∈R3×2 :
+
+    ⎡       ⎤ ⎡                               ⎤⎡               ⎤
+     2     1     −0.531      −0.113    −0.839 4.169         0    [︃                   ]︃
+                                                                   −0.828      −0.561
+A = ⎣3     0⎦ = ⎣−0.595      −0.654     0.466 ⎦ ⎣ 0       2.572⎦
+                                                                   −0.561       0.828
+     1     3     −0.602       0.748     0.279     0         0
+
+where we have used the full matrix decomposition; A = U ΣV ⊤ . If we consider
+the SVD with rank r=2, we can use the economy SVD A = U r Σr V ⊤     r :
+          ⎡     ⎤ ⎡                    ⎤
+           2 1        −0.531 −0.113 [︃                 ]︃ [︃             ]︃
+                                         4.169      0       −0.560 0.828
+     A = ⎣3 0⎦ = ⎣−0.595 −0.654⎦
+                                            0     2.572      0.828  0.56
+           1 3        −0.602 0.748
+
+It can be easily seen that u⊤               ⊤                         ⊤
+                            i ui = 1 and ui uj = 0 with i̸=j, e.g. u0 u0 =
+                        ⊤                                    ⊤
+[−0.531, −0.595, −0.602] [−0.531, −0.595, −0.602] = 1.0 and u0 u1 = [−0.531,
+−0.595, −0.602]⊤ [−0.113, −0.654, 0.748]= 0.0.
+
+
+4.4    Geometric interpretation
+
+Remember that we have a function f :Rn → Rm associated to matrix A∈Rm×n .
+What happens if we apply matrix A to a unit sphere Rn (we assume m≤n) ?
+Let us assume that x∈Rn are the vectors in the unit sphere. Remembering that
+when we apply an orthonormal matrix to a vector we rotate the vector, then:
+
+      Ax = U ΣV ⊤ x                                                             (4.4.1)
+
+which means that we first apply a rotation V ⊤ to vectors x (still in Rn ), then
+we stretch or shrink in each direction (since we multiply vectors by singular
+values larger or than 0), producing an ellipsoid in Rm , and finally we rotate
+again using U in Rm .
+In other words, we produce a linear mapping in which a sphere in Rn is converted
+to an ellipsoid in Rm (make some figures showing the geometric interpretation).
+
+
+                                          40
+4.5    SVD, pseudo-inverse and projection matrices
+
+Let us consider a linear system of equations:
+      Ax = y                                                              (4.5.1)
+where A∈Rm×n , x∈Rn and y∈Rm .
+If m=n we have a two-sided inverse of matrix A, i.e., AA−1 = A−1 A = I,
+that is what we call inverse of A if the nullspace(A) and nullspace(A⊤ ) only
+contain the zero vector.
+Let us consider the case in which the rank(A)=r=n, and then the nullspace(A)
+only contains the zero vector. In this case m>n (overdetermined case) in
+which case we can not produce an inverse. However, A⊤ A has inverse since it
+is a symmetric n×n matrix. From here and the SVD we can deduce what is
+called the left pseudo-inverse:
+      A−1       †    ⊤
+       lef t = A = (A A)
+                         −1 ⊤
+                           A                                              (4.5.2)
+Deduction:
+      Ax = y → A⊤ Ax = A⊤ y                                               (4.5.3)
+                        ⊤            ⊤    ⊤
+We can observe that: A A = V Σ ΣV , and:
+      V Σ⊤ ΣV ⊤ x = A⊤ y → x = V (Σ⊤ Σ)−1 V ⊤ A⊤ y                        (4.5.4)
+since (A⊤ A)−1 = V (Σ⊤ Σ)−1 V ⊤ , we conclude that:
+      x = (A⊤ A)−1 A⊤ y = A−1
+                           lef t y                                        (4.5.5)
+
+Note that A−1                         −1
+              lef t A = In and that AAlef t only is I n if n = m. As a statement,
+a non-symmetric matrix can not have a two-sided since A or A⊤ has null-space
+different of the zero vector.
+In the same way, let us consider the case in which the rank(A)=r=m, and then
+the nullspace(A⊤ ) only contains the zero vector. In this case m<n (underde-
+termined case) in which case we can not produce an inverse. However, AA⊤
+has inverse since it is a symmetric n×n matrix. From here and the SVD we can
+deduce what is called the right pseudo-inverse:
+      A−1       †   ⊤   ⊤ −1
+       right = A = A (AA )                                                (4.5.6)
+
+Note that AA−1                      −1
+               right = Im and that Aright A only is I m if n = m. As a statement,
+a non-symmetric matrix can not have a two-sided since A or A⊤ has null-space
+different of the zero vector.
+Finally, If A is full column rank (r = n), and A−1        ⊤
+                                                lef t = (A A)
+                                                              −1 ⊤
+                                                                A , then matrix
+
+
+      P = AA−1         ⊤
+            lef t = A(A A)
+                           −1 ⊤
+                             A                                            (4.5.7)
+
+
+                                         41
+projects Rm into the column space of A.
+In a similar way, If A is full row rank (r = m), and A−1       ⊤  ⊤
+                                                      right = A (A A)
+                                                                      −1
+                                                                         ,
+then matrix
+
+      P = A−1         ⊤  ⊤
+           right A = A (A A)
+                             −1
+                                A                                                   (4.5.8)
+
+projects Rn into the row space of A.
+What is the pseudo-inverse in terms of the SVD? The pseudo-inverse is
+a matrix that satisfies that x = AA† x. In other words: U ΣV ⊤ A† = I, and
+remembering that matrices U and V are othornormal (and easy to invert), then
+A† = V Σ† U ⊤ . The best approximation of Σ† is a matrix with diagonal values
+for i = 1, . . . , r for the first r rows (or columns), with r the rank of A and the
+rest of diagonal values are zero.
+
+Example 4.2 (Pseudo-inverse using the SVD) Remembering example 1.14,
+we obtained the pseudoinverse of matrix A
+            ⎡     ⎤
+             2 1
+     Ax = ⎣1 3⎦
+             0 1
+
+as A† = (A⊤ A)−1 A⊤ :
+                                 ⎡      ⎤
+            [︃                 ]︃ 2   1     [︃           ]︃ [︃                         ]︃
+              2       1       0 ⎣             2   1    0       0.567   −0.133   −0.167
+      A† = (                      1   3⎦)−1                =
+              1       3       1               1   3    1      −0.167   0.333     0.167
+                                  0   1
+
+then, if we want to solve Ax = b, with b = [3, 1, 4], we obtain x=A† b= [0.9, 0.5].
+Using the SVD, A† = U ⊤ Σ† V . Since (see example 4.1)
+     ⎡                           ⎤       ⎡                ⎤
+       −0.499 0.847        0.183           3.719       0        [︃                ]︃
+                                                                   −0.493 −0.87
+U = −0.834 −0.413 −0.365 ; Σ =
+     ⎣                           ⎦       ⎣   0       1.473 ; V
+                                                          ⎦
+                                                                    0.87  −0.493
+       −0.234 −0.335 0.913                   0         0
+
+and considering the inverse of the Σ matrix (Σ† ) as:
+                            [︃               ]︃
+                              0.268    0    0
+     Σ† = (Σ⊤ Σ)−1 Σ⊤ =
+                                0    0.679 0
+
+Then, now:
+                                [︃                            ]︃
+        †         †       ⊤      0.567     −0.133      −0.167
+      A =VΣ U                 =
+                                −0.167     0.333        0.167
+
+
+
+
+                                                  42
+4.6     Economy, compact and truncated SVD
+
+Remember that matrix Σ is a diagonal matrix with r singular values in positions
+Σii , with i = 1, . . . , r and zeros otherwise:
+            ⎡                             ⎤
+             σ1 0 0 ... 0 0
+            ⎢ 0 σ2 0 ... 0 0 ⎥
+            ⎢                             ⎥
+            ⎢ ... ... ... ... ... ...⎥
+       Σ=⎢  ⎢0
+                                          ⎥                             (4.6.1)
+            ⎢        0 ... σr 0 ...⎥      ⎥
+            ⎣0       0 ... ... 0 ...⎦
+               0     0 ... ... ... 0
+while V = [v 1 , ..., v n ] and U = [u1 , ..., um ].
+Let us assume that k = min(m, n). Then, A can be written as:
+      A = U ΣV ⊤
+          = [σ1 u1 , ..., σk uk , 0, ..., 0][v 1 , ..., v n ]⊤
+             ∑︂                        ∑︂
+          =         σj uj v ⊤j +                0 v⊤  j                        (4.6.2)
+              j=1,..k                j=k+1,..n
+               ∑︂
+          =             σj uj v ⊤
+                                j
+              j=1,..k
+
+Defining Σj = diag(σ1 , ..., σk ), Uk = [u1 , ..., uk ], and Vk = [v 1 , ..., v k ], we
+obtain:
+      A = U k Σk V ⊤
+                   k                                                           (4.6.3)
+which is known as the economy SVD. On the other hand, if the rank r of A is
+r<min(m, n), then there only are r singular values different of zero, and then
+      A = U r Σr V ⊤
+                   r                                                           (4.6.4)
+which is known as the compact SVD. This fact is useful when obtaining matrices
+U and V since only ur and vr vectors have to be calculated.
+Finally, in low-rank aproximation, only t singular values (the t highest ones) are
+considered, and:
+      A = U t Σt V ⊤
+                   t                                                           (4.6.5)
+which is known as the truncated SVD.
+
+
+4.7     The SVD as the sum of r matrices of rank 1
+
+Let us take the economy SVD expression: A=U r Σr V ⊤
+                                                   r . and express matrix A
+as the sum of r matrices of rank 1:
+                        r
+                       ∑︂
+      A = U r Σr V ⊤
+                   r =     σk uk v ⊤
+                                   k                                 (4.7.1)
+                               k=1
+
+
+                                                    43
+This will be a key fact to find the best low-rank approximation (in the following
+sections) of a matrix by using the SVD.
+
+
+4.8      Matrix norms
+
+Remember that norms assign a real number (a length) to an element of vector
+space. The four (non-negativity, positive definiteness, absolute homogeneity and
+subadditivity or triangle inequality) defining properties of any norm applied to
+matrices A and B are (assume correct dimensions of the matrices):
+
+   • ∥A∥ ≥ 0 (positive-valued),
+   • ∥A∥ = 0 only if A=0mn (definite),
+   • ∥λA∥ = |λ| ∥A∥ (absolutely homogeneous),
+   • ∥A + B∥ ≤ ∥A∥ + ∥B∥ (triangle inequality).
+
+For matrix norms we introduce the additional condition:
+
+   • ∥AB∥ ≤ ∥A∥ ∥B∥ (sub-multiplicative).
+
+
+4.8.1     Matrix norms induced by vectors p-norms
+
+One way of defining a matrix norm, is using vector norms. The matrix norm
+measures how much a vector (assuming a vector p-norm) can increase
+in size when it is multiplied by A. Observe that in the definition we use a
+vector x that is a unitary vector (i.e., with norm ∥ · ∥ = 1). From this we can
+define:
+
+   • l−1 norm: maximum absolute column sum of A, i.e., sum all columns
+     and take the highest one:
+                                                            m
+                           ∥Ax∥1                           ∑︂
+             ∥A∥1 = max          = max∥x∥1 =1 ∥Ax∥1 = max      |aij |       (4.8.1)
+                            ∥x∥1                     1≤j≤n
+                                                           i=1
+
+
+   • l−2 norm: maximum singular value of A:
+
+                        ∥Ax∥2
+                                                       √︂
+           ∥A∥2 = max         = max∥x∥2 =1 ∥Ax∥2 =          λmax (A⊤ A) = σmax (A)
+                         ∥x∥2
+                                                                            (4.8.2)
+
+        This can be seen because A=U ΣV ⊤ , and the vector with maximum
+        length is v 1 . Then ∥Av 1 ∥2 = ∥σ1 u1 ∥2 = σ1 ∥u1 ∥2 , taking into account
+        that ∥v 1 ∥2 =1 and ∥u1 ∥2 =1, which yields the result;
+
+
+                                         44
+   • l−∞ norm: maximum absolute row sum of A, i.e., sum all rows and take
+     the highest one:
+                                                       n
+                      ∥Ax∥∞                           ∑︂
+           ∥A∥∞ = max       = max∥x∥∞ =1 ∥Ax∥∞ = max      |aij | (4.8.3)
+                       ∥x∥∞                     1≤i≤m
+                                                      j=1
+
+
+You can find geometrically the value of a matrix norm for a given matrix A
+geometrically by:
+
+   • Plotting the unit sphere for the matrix
+   • Finding the image under the transformation y = Ax
+   • Finding the maximum of ∥y∥
+
+That means that an induced matrix norm ∥A∥ is how much a matrix can stretch
+a vector to a maximum. If norm of a matrix is say number d; it means it can
+stretch a vector x by d maximum.
+
+Example 4.3 (Matrix norms) Let us take as example the matrix:
+        [︃    ]︃
+          1 2
+    A=
+          0 2
+
+and plot figures for ∥A∥1 , ∥A∥2 and ∥A∥inf ty (Figure 10). Observe that σ1 =
+2.9208 and σ2 = 0.6847. Thus ∥A∥1 = 4, ∥A∥2 = 2.9208 and ∥A∥∞ = 3.
+Observe, also, how vector (0,1) transforms to (2,2), that precisely is ymax for
+∥A∥1 . However, ymax =(3,2) corresponds to point (1,1) for ∥A∥∞ . On the other
+hand, the ymax for ∥A∥2 is produced by point x=(0.2577, 0.9667). Applying the
+norm definition to ymax , you should obtain the same norm than applying the
+matrix p-norm definitions.
+
+
+
+4.8.2    Schatten norms: Matrix norms that can be expressed in terms
+         of singular values
+
+Other possible matrix norms are the Schatten norms, which are defined in
+terms of the singular values, and which in some cases can be expressed in
+terms of the trace operator.
+The spectral norm is the operator norm induced by the vector 2-norm. Then,
+this norm coincides with the induced vector p = 2 norm:
+
+                     ∥Ax∥2
+        ∥A∥2 = max         = σmax (A)                                   (4.8.4)
+                      ∥x∥2
+
+
+                                        45
+               Figure 10: Induced matrix norms representation.
+
+
+The Frobenius norm can be defined in several ways (in terms of sum of all
+absolute coefficient values of the matrix, in terms of the trace of (AA⊤ ) or trace
+of (A⊤ A), and in terms of the sum of singular values):
+                √︄∑︂ ∑︂            √︂             √︂              √︄∑︂
+                                          ⊤                 ⊤
+     ∥A∥F =                     2
+                          |aij | = tr(A A) = tr(AA ) =                 σk2 (4.8.5)
+                    i   j                                           k
+
+Frobenius norm is often easier to compute than induced norms, and has the use-
+ful property of being invariant under rotations (and unitary operations in gen-
+eral), meaning that if U is a rotation (unitary matrix), then ∥A∥F = ∥AU ∥F =
+∥U A∥F . From here, we get the connection between the expression ”summatory
+of all matrix aij coefficients” and the summatory of square singular values, since
+A=U ΣV ⊤ .
+This norm is used in many applications, such as regularization in machine learn-
+ing/optimization problems when using matrices. An example is in obtaining the
+Laplacian matrix coefficients in graph signal processing (GSP) from the data
+measurements (we will see this application in some days).
+For the semidefinite matrix A⊤ A we can define an square root as a matrix B
+for which B 2 = A⊤ A. We define the nuclear (or Ky-Fan) norm or trace
+norm as:
+              ∑︂          √︂
+      ∥A∥N =      σk = tr( (A⊤ A))                                   (4.8.6)
+                k
+
+
+                                        46
+Figure 11: Spectral and Frobenius norms representation (2-D). The nuclear
+norm is the sum of σ1 + σ2 and thus is the perimeter of the paralelogram (sum
+of orange and blue arrows).
+
+
+these norms usually appear in infinite dimensional spaces, and also it is often
+used in mathematical optimization to search for low-rank matrices (measures
+the ”amount of rank-1 matrices” needed to construct A). It has applications
+in deep learning (chooses the best weights in gradient descent when there is
+more weights than samples), and also appears in other applications such as
+compressive sensing (express a vector in a ”compressed” way with many zero
+entries).
+
+Example 4.4 (Schatten norms) Let us assume matrix A
+        ⎡          ⎤
+         2 1 0 1
+    A = ⎣1 3 4 2⎦
+         0 1 3 3
+Their singular values are σ1 = 6.909, σ2 = 2.238 and σ3 = 1.501. The spectral
+√︁∑︁ is ∥A∥2 = σmax (A) = σ1 = 6.909. The Frobenius
+norm                                                         norm is ∥A∥F =
+        2 = 7.416, and the nuclear norm is ∥A∥ =
+                                                      ∑︁
+      σ
+    k k                                           N      k k = 10.648.
+                                                          σ
+
+
+4.9    Condition number of a matrix
+
+The condition number of a matrix A∈Rn×n characterizes the sensitivity of the
+solution of a linear system Ax = b to small changes in A and b. Let us take
+derivatives at both sides of the linear system:
+
+      Adx + (dA)x = db      ⇒    dx = A−1 (db − (dA)x)                  (4.9.1)
+
+
+                                      47
+Now, taking the Euclidean norm at both sides:
+       ∥dx∥ ≤ ∥A−1 ∥ ∥(db − (dA)x)∥ ≤ ∥A−1 ∥ (∥db∥ + ∥dA∥ ∥x∥)               (4.9.2)
+Now, we can use the inequality ∥b∥ = ∥Ax∥ ≤ ∥A∥ ∥x∥, we get:
+       ∥dx∥          ∥dA∥ ∥db∥
+            ≤ κ(A) (      +     )                                            (4.9.3)
+        ∥x∥           ∥A∥   ∥b∥
+We define the condition number of matrix A as:
+                           σmax
+     κ(A) = ∥A∥2 ∥A−1 ∥2 =                                                   (4.9.4)
+                           σmin
+where σmax and σmax are the maximum and minimum singular values of matrix
+A. Large condition number κ(A) results in a highly sensitive system, that is,
+small changes in A or b may result in very large changes in the solution x. On
+the other hand, a large condition number κ(A) implies that σmax >> σmin ,
+and then the matrix A is almost singular (is not invertible).
+
+Example 4.5 (Condition number) Let us assume matrix A0 (it is a singu-
+lar matrix) and an approximated matrix A.
+            [︃   ]︃       [︃              ]︃
+              2 4           2.0002 3.9999
+     A0 =           ; A=
+              1 2           0.9996 2.0002
+The SVD of matrix A is:
+    [︃              ]︃ [︃                   ]︃ [︃              ]︃ [︃                ]︃
+      2.0002 3.9999      −0.894      −0.447 4.999          0        −0.447   −0.894
+A=                    =
+      0.9996 2.0002      −0.447       0.894       0     0.00049 −0.894        0.447
+The condition number is κ(A) = σmax /σmin = 4.999/0.00049 = 10.000. Let us
+calculate A† :
+           [︃                 ]︃
+        †      800.08 −1599.96
+      A =                        =
+              −399.84  800.08
+Let us solve the linear system Ax = b with several b’s:
+      [︃               ]︃ [︃ ]︃ [︃ ]︃
+        2.0002 3.9999 x1          b
+                               = 1
+        0.9996 2.0002 x2          b2
+For example b = [2, 1] results in x = [0.2, 0.4], while a small change in component
+b1 such as b = [2.05, 1] results in x = [40.204, −19.592], or a small change in
+component b2 such as b = [2, 1.02] results in x = [−31.79, 16.402].
+
+
+4.10     Eckart-Young approximation (low-rank approxima-
+         tion)
+
+Let A∈Rm×n be a matrix with n columns and m rows with m≥n (thus it is
+full-rank when rank r=n). Suppose that A = AΣV ⊤ is the SVD, with U and
+
+
+                                        48
+V are orthonormal matrices, and Σ is an m×n diagonal matrix with entries
+(σ1 , σ2 , · · · , σn ) such that σ1 ≥ σ2 ≥ · · · ≥ σn ≥ 0.
+The Eckart-Young Th. says that the best rank k approximation (a matrix B
+with rank k≤n) to matrix A in the spectral norm ∥A∥2 is given by the truncated
+SVD:
+                  k
+                 ∑︂
+     B = Ak =          σi ui v ⊤
+                               i                                        (4.10.1)
+                 i=1
+
+This result can be extended to the Frobenius and the Nuclear norms.
+We can prove it for the special cases n=m=2 and k=1. For the general case,
+the proof follows the same reasoning.
+Let A = σ1 u1 v ⊤           ⊤                    ⊤
+                1 + σ2 u2 v 2 , and A1 = σ1 u1 v 1 . We can easily see that ∥A −
+A1 ∥ = σ 2 .
+Let B an arbitrary rank-1 2×2 general matrix. We can thus express B as:
+B = ρ1 x1 y ⊤
+            1 . Let w be an element of Ker(B) of length 1, which in our case
+would be an orthonormal vector to y. We can express w in terms of v 1 and v 2
+as w = γ1 v 1 + γ2 v 2 , with γ12 + γ22 = 1, with Bw = 0.
+Using the definition of the spectral norm (which coincides with the induced
+norm with p = 2) we have:
+
+     ∥A − B∥22 ≥ ∥(A − B)w∥22 = ∥Aw∥22 = σ12 γ12 + σ12 γ22 ≥ σ22        (4.10.2)
+
+meaning that:
+
+     ∥A − B∥22 ≥ ∥A − A1 ∥22                                            (4.10.3)
+
+Example 4.6 (Low rank approximation example) Let us consider matrix
+A. Find the best rank-1, rank-2 and rank-3 approximations.
+          ⎡            ⎤
+           2 1 0 1
+     A = ⎣1 3 4 2⎦
+           0 1 3 3
+
+First, we obtain the SVD of matrix A = U ΣV ⊤ :
+           ⎡                        ⎤
+             −0.188 −0.881 0.434
+      U = ⎣ −0.78 −0.134 −0.611⎦
+             −0.596 0.454     0.662
+
+        ⎡                                        ⎤
+         −0.167         −0.452     −0.711 −0.512
+        ⎢−0.847         −0.371      0.368  0.094 ⎥
+     V =⎢                                        ⎥
+        ⎣ 0.172         −0.49      −0.304 0.799 ⎦
+         −0.474          0.646     −0.517 0.302
+
+                                         49
+and the singular values are:
+           ⎡                         ⎤
+            6.909     0      0      0
+     Σ=⎣ 0          2.238    0      0⎦
+              0       0    1.501    0
+The best rank-1 approximation is given by A1 = σ1 u1 v ⊤
+                                                       1
+                            ⎡       ⎤
+                             −0.188 [︁
+     A1 = σ1 u1 v ⊤
+                                                                     ]︁
+                  1 = 6.909 ⎣ −0.78 ⎦ −0.167 −0.452 −0.711 −0.512
+                             −0.596
+                                           ⎡                        ⎤
+                                             0.217 0.588 0.923 0.665
+                                         = ⎣0.902 2.439 3.832 2.761⎦
+                                             0.69 1.864 2.929 2.11
+In the same way, we can obtain rank-2 (A2 ) and rank-3 (A3 ) approximations:
+                                    ⎡                          ⎤
+                                      1.888 1.319 0.198 0.479
+      A2 = σ1 u1 v ⊤            ⊤
+                   1 + σ 2 u2 v 2 =
+                                    ⎣ 1.157 2.551 3.721 2.732⎦
+                                     −0.171 1.487 3.302 2.206
+                                              ⎡              ⎤
+                                               2   1   0   1
+      A3 = σ1 u1 v ⊤           ⊤           ⊤
+                   1 + σ2 u2 v 2 + σ3 u3 v 3 = 1
+                                              ⎣    3   4   2⎦
+                                               0   1   3   3
+
+
+5    Principal component analysis (PCA)
+Large datasets are common in many data science applications. In order to
+interpret such datasets, it is useful to drastically reduce their dimensionality in
+an interpretable way, such that most of the information in the data is preserved.
+One of the oldest and most widely used technique is principal component
+analysis (PCA), which reduces the dimensionality of a dataset by solving an
+eigenvalue/eigenvector problem, while preserving as much ”variability” - i.e.,
+statistical information - as possible.
+Principal component analysis is basically used as an exploratory tool for data
+analysis, although there exist several adaptations to other applications such as
+functional PCA (continuous variables), robust PCA (to avoid sensitiveness to
+the presence of outliers), etc.
+Thus, PCA is a dimensionality reduction method that is typically used to reduce
+the dimensionality of large data sets. The reduced dimensional representation
+retains the information conveyed by the large dimensional representation.
+PCA is an orthogonal linear transformation that transforms the data into a new
+coordinate system such that the largest variance by some scalar projection of
+the data is placed in the first coordinate (called the first principal component),
+the second largest variance in the second coordinate, etc.
+
+
+                                         50
+5.1    Interpretation 1: maximizing directions with maxi-
+       mum variability
+
+In other words: the principal components of a set of data X∈Rm×n with
+column-wise zero empirical mean (the sample mean of each column has been
+shifted to zero), provide a sequence of the best linear approximations to those
+data, of all ranks q≤n. In other words, given x1 , . . . , xm measurements, we
+want to find a q-rank linear model for representing them.
+
+       y1    = a11 x1 + a12 x2 + · · · + a1n xn
+       y2    = a21 x1 + a22 x2 + · · · + a2n xn
+                                                                                (5.1.1)
+       ...
+       yq    =    aq1 x1 + aq2 x2 + · · · + aqn xn
+
+The new axes represent the directions with maximum variability and provide
+simpler more concise description of the covariance structure. Let us assume in
+general that we have matrices C and X. Let us assume that X is a random
+variable with mean µX and covariance matrix ΣX =XX ⊤ and let’s take linear
+combinations Y =CX. We know the following properties (seen in probability
+sections):
+
+      µY = E[Y ] = E[CX] = CE[X] = CµX                                          (5.1.2)
+
+
+
+      ΣY = Cov[Y ] = Cov[CX] = CΣX C ⊤                                          (5.1.3)
+
+In case that C is a vector c, and y=c⊤ x:
+
+      V ar(y) = V ar(c⊤ x) = c⊤ ΣX c                                            (5.1.4)
+
+To maintain coherence with the dimensions, let us work with matrix X ⊤ ∈Rn×m ,
+thus ΣX =X ⊤ X∈Rn×n , and y i =a⊤       ⊤                        ⊤
+                                    i X , and Var(y i )=ai ΣX ai . Now, the
+PCA are those uncorrelated linear combinations y 1 , . . . , y Q whose variances are
+as large as possible, meaning to maximize Var(y i )=a⊤   i ΣX ai . We should take
+care with the length of vectors a’s, since multiplying ai by any constant will
+increase the variance. Then, we have to restrict to vectors a’s whose lengths
+are unitary: a⊤
+              i ai =1. Then the algorithm has to solve the following:
+                          ⊤
+Fist component: y 1 = a⊤
+                       1X   that maximizes Var(y 1 ) subject to a⊤
+                                                                 1 a1 =1.
+                            ⊤
+Second component: y 2 = a⊤                                        ⊤
+                         2 X that maximizes Var(y 2 ) subject to a2 a2 =1
+and Cov(y 1 ,y 2 )=0.
+                                  ⊤
+q-th component: y q = a⊤      q X   that maximizes Var(y q ) subject to a⊤
+                                                                         q aq =1
+and Cov(y q ,y j )=0 for j < q.
+Result: Let ΣX be the covariance matrix associated to X ⊤ , and have ΣX
+the eigenvalue-eigenvector pairs (e1 ,λ1 ),. . . , (en ,λn ) with λ1 ≥λ2 ≥ . . . ≥λn ≥0.
+
+
+                                          51
+Then, the i − th principal component is given by:
+                 ⊤
+      y i = e⊤
+             i X                                                           (5.1.5)
+
+with Var(y i )= e⊤                                  ⊤
+                 i ΣX ei =λi and Covar(y i ,y j )= ei ΣX ej =0. This means that
+the first component is the one with the largest eigenvector, the second compo-
+nent is the one with the second largest eigenvector, and so on.
+
+
+5.2    Interpretation 2: projecting in a subspace
+
+Let us assume that we have m data measurements, each of dimension n. We
+arrange the data in a matrix X∈Rm×n . Let us assume that we want to project
+this data in 1-D subspace, whose direction is defined by vector u1 . Without loss
+of generality, we assume that this vector has length equal to 1 (u⊤ 1 u1 =1) since
+we are interested in the direction and not in the length.
+We now project each data point xi , i=1, . . . , m in the 1-D subspace defined by
+u1 . This projection amounts to u⊤1 xi , the projected mean is given by u1 x̄,
+                                                                              ⊤
+
+with x̄ the sample mean:
+                 m
+             1 ∑︂
+      x̄ =         xi                                                      (5.2.1)
+             m i=1
+
+and the projected variance σ 2u1 is given by:
+                     m
+                1 ∑︂ ⊤
+      σ 2u1 =        (u xi − u⊤    2  ⊤
+                              1 x̄) =u1 Σx u1                              (5.2.2)
+                m i=1 1
+
+with Σx = XX ⊤ the covariance matrix.
+If we want to maximize the projected variance u⊤ 1 Σx u1 we have to consider the
+constraint u⊤
+            1 u1 =1, and add a Lagrange multiplier (we will see the meaning of
+Lagrange multipliers in TOML, non-linear optimization). Then we multiply the
+constraint by a scalar λ1 and add it to the variance objective function:
+
+      u⊤                  ⊤
+       1 Σx u1 + λ1 (1 − u1 u1 )                                           (5.2.3)
+
+To maximize this expression, we obtain the derivatives with respect to u1 equal
+to 0, and obtain the following expression we obtain:
+
+      Σx u1 = λ1 u1                                                        (5.2.4)
+
+which says that u1 is an eigenvector with eigenvalue λ1 and they maximize the
+variance of the projected data on subspace defined by u1 . We can extend easily
+this idea to higher dimensional projected spaces (more principal components).
+
+
+
+
+                                       52
+5.3    Connection PCA-SVD
+
+PCA and SVD are closely related approaches and can be both applied to de-
+compose any rectangular matrices. Let us assume our data matrix X∈Rm×n ,
+and consider the sample covariance matrix S=X ⊤ X/(m − 1). Then:
+            X ⊤X     V ΣU ⊤ U ΣV ⊤   V Σ2 V ⊤   V Σ2 V −1
+      S=           =               =          =                           (5.3.1)
+           (m − 1)      (m − 1)      (m − 1)     (m − 1)
+since V is a unitary matrix and V ⊤ = V −1 , and we know that Λ = Σ2 /(m−1),
+meaning that we can perform PCA using SVD or viceversa. In general, when
+performing PCA is computationally easier to use SVD than EVD, due to the
+economic/truncated SVD representations.
+
+
+5.4    Amount of total variance explained
+
+Once we have obtained the principal components, the proportion of total vari-
+ance explained by the i − th principal component is given by:
+        λ
+      ∑︁n i                                                               (5.4.1)
+        i=1 λi
+
+For example, if the first two-three principal components explain 80-90% of the
+variability, then it could be worth replacing the n features by these principal
+components.
+
+
+5.5    Eigenfaces
+
+We are going to use the SVD/PCA in a denoising application using a set of
+images. The application is called eigenfaces. Let us assume that we have
+a set of images of people where one person images are taken from different
+angles, e.g. different bright/lighting conditions or different poses. For example
+40 people with 50 images of each person, forming a set of K images. Each image
+has p×q pixels that are vectorized. Consider that we have L1 , . . . , LM faces,
+where each Li is a vector representing a face in RN , with N =p×q (a vectorized
+representation of an image of p×q pixels).
+                                       ∑︁M
+The average face is given by Ψ=1/M i=1 Li , and now we obtain the difference
+of each face with respect the average face: xi =Li − Ψ with i=1, . . . , M . We
+then organize our database of faces in a matrix X=[x1 , . . . , xM ]∈RN ×M . we
+obtain the SVD of X as:
+      X = U ΣV ⊤                                                          (5.5.1)
+Where U ∈RN ×N and V ∈RM ×M are the left and right singular vector matri-
+ces, and Σ∈RN ×M is the diagonal singular value matrix, with singular values
+σ1 ≥σ2 ≥ . . . ≥σN ≥0.
+
+
+                                       53
+Figure 12: Eigenfaces database (taken from Brunton book ”Data driven Science
+& Engineering). (Left:) several faces from different people; (Right:) faces from
+the same person.
+
+
+Then, applying the Eckart–Young theorem, the best r-rank approximation of
+matrix X can be obtained taking the singular vectors related to the r-largest
+singular values, Xr =Ur Σr Vr⊤ , with Ur ∈RN×r , Vr ∈RM×r and Σr ∈Rr×r ex-
+pressed in their truncated form. Afterwards, any new image taken can be pro-
+jected onto the subspace generated by the left-singular vectors Ur . The idea
+behind this operation lies in projecting the image into a subspace generated by
+the most important latent patterns of face images encoded in the database.
+Suppose now that we have a new face image. The aim is to denoise the image,
+encoded in the vector xc ∈RN , by projecting it onto the subspace generated by
+Ur , and then perform a signal reconstruction. First, we find x̂c =xc −Ψ, the
+difference between the daily in-situ calibrated LCS data with the new image
+and the average of faces in the database. The new estimated vector will be
+given by: x̃c = Ψ + Ur U⊤r x̂c
+
+A key parameter is the best r-rank approximation of matrix X, or in other
+words what is the optimal hard threshold r to denoise and reconstruct the
+images.
+We assume that matrix X is the sum of a true value and some noise:
+
+     X = Xtrue + Xnosie                                                  (5.5.2)
+
+where entries in Xnosie are identically and independently distributed with Gaus-
+sian random variables of zero mean and variance γ. If the magnitude of γ is
+known, then:
+
+
+
+                                      54
+    • If X∈Rn×n (square), then
+                 4 √
+            r = √ nγ                                                        (5.5.3)
+                  3
+                                                                    √
+    • If If X∈Rm×n (non-square) and m<<n, then the fraction 4/ 3 is sub-
+      stituted by a function λ(β), with β=m/n (you can find the expression in
+      papers or in the book of S. Brunton ”Data driven Science & Engineering”).
+
+                    √
+            r = λ(β) nγ                                                     (5.5.4)
+
+
+                                             8β
+            λ(β)=(2(β + 1) +                                  )1/2          (5.5.5)
+                               (β + 1) + (β 2 + 14β + 1)1/2
+      If n<<m, then β=n/m, and of β=1 the expression reduces to the previous
+      one.
+
+If the magnitude of γ is unknown, and X∈Rm×n (non-square) then the
+optimal threshold is given by:
+
+      σ̃ = w(β)σmed                                                         (5.5.6)
+
+where σmed is the median of the singular values, while w(β) is obtained as:
+
+      w(β) ≈ 0.56β 3 − 0.95β 2 + 1.82β + 1.43                               (5.5.7)
+
+where β=m/n. Finally, r corresponds to the number of singular values that are
+greater than the threshold σ̃.
+
+
+6     The Fourier transform
+The idea of Fourier series and Fourier transforms is to decompose functions
+into their basic components. Fourier transforms have many applications such as
+noise filtering, spectral derivatives, transforming partial differential equations,
+image processing, and a way of express vector data in generic or universal bases,
+in contrast with vector data expressed in tailored bases, in which we were able
+to compress data using the SVD (reduction of dimensionality).
+Sparsity consists in expressing a signal with a vector in which many components
+are zero, Although the fast Fourier transform is a technology that allows a signal
+to be reconstructed from its sparse coefficients, it is not the only way to do so,
+e.g. Fourier is the basis of JPEG or MPEG. The Fourier modes are generic or
+universal bases, in the sense that nearly all natural images or audio signals are
+sparse in these bases. It is also possible to compress signals using the SVD,
+resulting in a tailored basis.
+
+
+                                        55
+Figure 13: Eigenfaces database (taken from Brunton book ”Data driven Science
+& Engineering”). The approximation improves for r≥400.
+
+
+
+
+Figure 14: Eigenfaces database (taken from Brunton book ”Data driven Science
+& Engineering”). Since faces have mouth, eyes, cheeks, and a lot of features,
+and there are more than 1600 faces representing a lot of situations, the approx-
+imation works pretty well for a dog.
+
+
+6.1    Fourier series
+
+As in finite-dimensional vector spaces, the inner product may be used to project
+a function into an new coordinate system defined by a basis of orthogonal func-
+tions. A Fourier series representation of a function f is precisely a projection of
+this function onto the orthogonal set of sine and cosine functions with integer
+
+
+                                        56
+Figure 15: Eigenfaces database (taken from Brunton book ”Data driven Science
+& Engineering”). Approximation for a cappuccino, works well because the 1600
+faces also represent non-localized spatial features.
+
+
+period on the domain [a, b].
+An important result is that if f (x) is periodic and piecewise smooth, then it can
+be written as a Fourier series. For example, if f (x) is L-periodic in [0,L), then:
+                          ∞
+                 a0 ∑︂          2πkx             2πkx
+      f (x) =      +   (ak cos(      ) + bk sin(      ))                    (6.1.1)
+                 2               L                L
+                         k=1
+
+
+
+                                               < f (x), cos( 2πkx
+                 ∫︂ L
+             2                      2πkx                      L )>
+      ak =              f (x)cos(        )dx =           2πkx
+                                                                            (6.1.2)
+             L    0                  L            ∥cos( L )∥2
+
+
+                                               < f (x), sin( 2πkx
+                 ∫︂ L
+             2                      2πkx                      L )>
+      bk =              f (x)sin(        )dx =           2πkx
+                                                                            (6.1.3)
+             L    0                  L            ∥sin( L )∥2
+
+These coefficients may be viewed as the coordinates obtained by projecting the
+function onto the orthogonal cosine and sine basis {cos(kx), sin(kx)}∞
+                                                                     k=0 .
+
+Since we can write the Fourier series in complex form using the facts that
+eikx = cos( 2πkx         2πkx
+             L ) + i sin( L ) and ck = ak + i bk :
+
+                  ∞
+                  ∑︂                  ∞
+                                      ∑︂
+      f (x) =            ck eikx =          ck ψk (x)                       (6.1.4)
+                 k=−∞                k=−∞
+
+Thus, a Fourier series is just a change of coordinates of a function f (x) into an
+infinite-dimensional orthogonal function space spanned by sines and cosines.
+
+
+                                                57
+6.2      Fourier transform
+
+The Fourier series is defined for periodic functions, so that outside the domain of
+definition, the function repeats itself forever. The Fourier transform integral
+is essentially the limit of a Fourier series as the length of the domain goes to
+infinity, which allows us to define a function defined on (−∞, ∞).
+Thus, we represent the set of frequencies as wk =kπ/L, and taking the limit
+L → ∞, such as k/L → f , w=2πf , ∆w=2π/L, and ∆w → 0, we will arrive to
+the classical Fourier transforms formulas (not necessary to proof here the pass
+from Fourier series to Fourier transform, see books for that proof if interested):
+
+                  ∫︂ ∞
+        F (w) =          f (x) e−jwx dx                                     (6.2.1)
+                    −∞
+
+
+                  ∫︂ ∞
+        f (x) =          F (w) ejwx dw                                      (6.2.2)
+                   −∞
+
+
+Example 6.1 (Fourier Transform example) For example, assume a box sig-
+nal, Figure 16, f(x)=A if x∈[−T /2, T /2] and 0 otherwise, has Fourier Transform
+F(f )=ATsinc(fT)= ATsin(πf T /(πf T )), where the sinc(f )=sin(πf )/(πf ).
+
+
+6.2.1     Some basic properties of the FT
+
+Let us assume that we have functions f(x), g(x), and their Fourier Transform
+F(w), G(w). The following basic properties hold:
+
+   • Linearity: the Fourier transform of sum of two or more functions that
+     are multiplied by a constant is the sum of the Fourier transforms of the
+     functions
+
+             (af (x) + bg(x)) =⇒ (aF (w) + bG(w))                           (6.2.3)
+
+   • Scaling: if we stretch a function by the factor in the time domain then
+     squeeze the Fourier transform by the same factor in the frequency domain:
+
+
+             f (ax) =⇒ (1/|a|)F (w/a)                                       (6.2.4)
+
+   • Derivative: differentiating function with respect to time yields to the
+     constant multiple of the initial function:
+
+             df (x)/dx =⇒ (jw)F (w)                                         (6.2.5)
+
+
+                                          58
+                                 (a) Box signal.
+
+
+
+
+                                 (b) Sinc signal
+
+
+Figure 16: The box signal f(x)=A if x∈[−T /2, T /2] and 0 otherwise, has Fourier
+Transform F(f)=ATsinc(fT)= ATsin(πf T )/(πf T )).
+
+
+   • Convolution: the Fourier transform of a convolution of two functions is
+     the point-wise product of their respective Fourier transforms:
+           f (x)∗g(x) =⇒ F (w)G(w)                                       (6.2.6)
+     Note: the convolution of two functions is a mathematical operation that
+     says how the shape of a function is changed by the other function, a
+     convolution in continuous time is expressed as
+                       ∫︂ ∞                    ∫︂ ∞
+          f (x)∗g(x) =      f (y)g(x − y) dy =      f (x − y)g(y) dy  (6.2.7)
+                         −∞                        −∞
+
+   • Time shift: a linear displacement in time corresponds to a linear phase
+     factor in the frequency domain:
+                                       ′
+           f (x − x′ ) =⇒ F (w)e−jwx                                     (6.2.8)
+
+   • Frequency shift: frequency is shifted according to the co-ordinates:
+                   ′
+           f (x)ejw x =⇒ F (w − w′ )                                     (6.2.9)
+
+
+                                           59
+6.2.2    Applications
+
+There are many applications in engineering in which Fourier Transforms are
+used. Among them, we can list: i) solving of partial differential equations such as
+the heat equation d2 f(x,t)/dx2 = df(x,t)/dt or the wave equation d2 f(x,t)/dx2 =
+d2 f(x,t)/dt2 ; ii) spectral analysis of time-series (e.g. to find the response of
+the LTI ( linear time invariant ) systems); iii) filtering (lowpass, bandpass or
+highpass); iv) etc, etc, etc. We will see some examples after seeing the discrete
+version of the FT.
+
+
+6.3     Discrete Fourier Transform and Fast Fourier Trans-
+        form
+
+We have seen how to obtain the Fourier transform when the signal f(x) is a
+continuous function. However, in general, we discretize the analog/continuous
+signals, e.g., using an ADC that samples the signal to a specific sampling rate
+or spacing ∆x, having a vector of data [f0 , f1 , . . . , fN −1 ]. Thus, it is necessary,
+when dealing with vectors of data, to approximate the Fourier transform for
+dealing with discrete vectors. This is called the discrete Fourier transform,
+DFT. Remember that the domain of the function was called x and then the
+data is sampled at point xi and the evaluation of the function (samples) are
+then called fi . However, for simplicity, from now, we will express our vectors
+of sampled data [f0 , f1 , . . . , fN −1 ] as [x0 , x1 , . . . , xN −1 ], to be coherent with the
+variables expressed during the course (meaning that vector x is the sample data
+and not the domain of the function).
+                                                     2π
+Let us define the complex number wN = ej N = cos( 2π            2π
+                                                   N ) + j sin( N ), i.e. is the
+first N -th root of −1. The Fourier matrix FN is defined as:
+                   ⎡                                           ⎤
+                     1      1         1     ...        1
+                   ⎢1       −1        −2            −(N −1)
+                   ⎢      wN        wN      ...   wN           ⎥
+                                                               ⎥
+                            −2        −4            −2(N −1) ⎥
+               1 ⎢1⎢
+                          wN        wN      ...  wN
+       FN = √ ⎢                                                          (6.3.1)
+                                                               ⎥
+                            −3        −6            −3(N −1) ⎥
+                N ⎢1
+                   ⎢      wN        wN      ...  wN            ⎥
+                                                               ⎥
+                   ⎣...    ...       ...    ...       ...      ⎦
+                         −(N −1)   −2(N −1)      −(N −1)(N −1)
+                     1 wN        wN         ... wN
+
+Sometimes the factor √1N is omitted in the definition.
+
+This matrix is unitary, meaning that FN H FN =FN FN H =I. The matrix AH
+is called hermitian if it is a complex square matrix that is equal to its own
+conjugate transpose, i.e., aik = āki (remember complex conjugate; if aik =3+j4,
+then āki =3-j4) or A=AH (special case is when the component is a real number
+in which A=A⊤ ). In other words, hermitian matrices can be understood as the
+complex extension of real symmetric matrices.
+
+
+                                               60
+Remember that as we are dealing with complex vectors and matrices, the scalar
+product between two vectors x and y (e.g. two columns of FN ) is defined as
+xH y. Do not forget to use the conjugate transpose instead of simply transpose!.
+For instance, if N = 4 we have:
+              ⎡                 ⎤
+                1 1     1    1
+            1 ⎢1 −j −1 j ⎥
+      F4 = ⎢                    ⎥                                              (6.3.2)
+            2 ⎣1 −1 1 −1⎦
+                1 j −1 −j
+
+The Fourier matrix is one of the most important matrices in applied mathemat-
+ics and engineering.
+
+
+6.3.1      The Discrete Fourier Transform (DFT)
+
+The discrete Fourier transform (DFT), x̂, is the operation of multiplying a
+vector of data x by the matrix FN :
+                       ⎡                                             ⎤⎡
+                         1       1         1     ...        1            x0
+                                                                              ⎤
+                       ⎢1        −1        −2            −(N   −1)
+                       ⎢       wN        wN      ...    wN           ⎥⎢
+                                                                     ⎥   x1 ⎥
+                                 −2        −4            −2(N −1) ⎥ ⎢         ⎥
+                    1 ⎢1
+                       ⎢
+                               wN        wN      ...   wN            ⎥⎢  x2 ⎥
+      x̂ = FN x = √ ⎢            −2        −6            −3(N −1) ⎥ ⎢ x
+                                                                       ⎢      ⎥
+                    N⎢   1     w N       w N     ...   w N
+                                                                     ⎥⎢ 3 ⎥   ⎥
+                                                                     ⎦ ... ⎦
+                       ⎢                                             ⎥⎣
+                       ⎣...     ...       ...    ...       ...
+                         1 w
+                              −(N −1)
+                                      w
+                                        −2(N −1)
+                                                 ... w
+                                                       −(N −1)(N −1)    xN −1
+                                         N              N                  N
+                                                                               (6.3.3)
+
+This operation is the same as:
+                N
+                ∑︂−1
+        x̂k =          xi e−j2πik/N     ∀k = 0, . . . , N − 1                  (6.3.4)
+                i=0
+
+meaning that:
+                                      DF T
+        x=[x0 , x1 , . . . , xN −1 ] =⇒ x̂=[x̂0 , x̂1 , . . . , x̂N −1 ]       (6.3.5)
+
+The result of this multiplication x̂ is called the transformed vector. For com-
+modity, we will use the term signal for the vector x and Fourier transform for
+the vector x̂. Recall that both vectors have dimension N . We can observe that
+the DFT is a linear operator (a matrix) that maps data points x in the frequency
+domain x̂. It is to say, we see the DFT operation corresponds to finding the
+components of vector x expressed in the unitary base created by the columns
+of FN (the so called Fourier base).
+The Inverse DFT is defined as:
+             H
+        x = FN x̂                                                              (6.3.6)
+
+
+                                                   61
+and this operation is the same as:
+                  N −1
+               1 ∑︂
+        xi =        x̂k ej2πki/N         ∀i = 0, . . . , N − 1                (6.3.7)
+               N
+                   k=0
+
+meaning that:
+                                    IDF T
+        x̂=[x̂0 , x̂1 , . . . , x̂N −1 ] =⇒ x=[x0 , x1 , . . . , xN −1 ]      (6.3.8)
+
+For a 2D signal X (e.g. a picture represented by a matrix with M rows and N
+columns) we define the DFT as a two-step process: First find the DFT of the
+columns, and then find the DFT of the columns of the resulting matrix (the
+order can be changed):
+              H
+        X̂ = FM XFN                                                           (6.3.9)
+
+
+6.3.2      The Fast Fourier Transform (FFT)
+
+In general, if A is a N ×N matrix, and x is a vector with N components, the
+operation Ax requires N 2 multiplications.
+In the special case of FN x, the FFT algorithm gives a method for computing
+this product in only 21 N log2 N multiplications. This is a huge improvement.
+Some people (e.g. G. Strang) considers that the FFT is the most important
+numerical algorithm of the XXth century.
+
+
+6.3.3      The complex conjugate of the columns of the Fourier matrix
+           are the eigenvectors of the circulant matrices
+
+Another extraordinary property of the columns of the Fourier matrix is that the
+complex conjugate of its columns are the eigenvectors of circulant matrices.
+A circulant matrix has the following form:
+           ⎡                               ⎤
+             h0    hN −1 hN −2 ... h1
+           ⎢ h1      h0    hN −1 ... h2 ⎥
+      C=⎢  ⎣ ...
+                                           ⎥                                 (6.3.10)
+                     ...     ...   ... ... ⎦
+            hN −1 hN −2 hN −3 ... h0
+
+Circulant matrices are especially important as they can be used to represent
+a very rich and important class of linear system, the linear systems that are
+invariant to time shifts.
+The eigenvector (1, wi , w2i , ..., w(N −1)i )⊤ has associated the eigenvalue λi =
+h0 + h1 w−i + h2 w−2i + ... + hN −1 w(N −1)i . Defining Λ = diag(λ0 , ..., λN −1 ), we
+obtain the decomposition:
+             H
+        C = FN ΛFN                                                           (6.3.11)
+
+
+                                                  62
+The output signal for an input x can be obtained very efficiently by applying
+the FFT algorithm.
+
+
+
+
+Figure 17: Denoising a signal (Figure taken from S.L. Brunton book, ”Data
+driven science & engineering”).
+
+
+
+Example 6.2 (Filtering noise (denoising) in a signal) A first example
+es filtering noise (denoising) in a signal. For example consider figure 17 where
+we have a signal f(t)= sin(2πf1 t) + sin(2πf2 t) for f1 =50 and f2 =120 (black
+curve). We add some Gaussian noise distributed with zero mean and σ 2 vari-
+ance, i.e., N(0,σ 2 ), (red curve). If we obtain the FT, we can observe the two
+peaks centered at f1 =50 and f2 =120. We can then filter the signal keeping
+frequencies lower than f2 =120, and then removing high frequency components.
+We can observe in the third figure the original (without noise) signal and the
+denoised filtered signal.
+An example of a filter is to pass the signal f(t) by a linear system h(t). The output
+is the convolution y(t)=f(t)∗h(t) −→ Y(W)=F(W)H(w). If H(w) is a filter
+allowing to pass frequencies f1 and f2 and not allowing the rest of frequencies,
+we are denoising (filtering noise) our signal.
+
+
+
+                                         63
+                      (a) Derivative methods with n=128 points.
+
+
+
+
+                              (b) Error as a function of n
+
+
+Figure 18: Taking the derivative of a signal (Figure taken from S.L. Brunton
+book, ”Data driven science & engineering”).
+
+
+Example 6.3 (Spectral derivative) A second example is the spectral deriva-
+tive. We know that the FT of the derivative of a function in continuous time is
+F(df(x)/dx)=jwF(f(x)). If we discretize, then we can substitute jw → jκ, with
+κ = 2πk/n, assuming n components. For example, let us assume the function:
+                        2                                    2    2
+     f (x) = cos(x)e−x /25 =⇒ df (x)/dx = −sin(x)e−x /25 −           xf (x) (6.3.12)
+                                                                  25
+One way of obtaining the derivative is to use finite differences:
+      df         f (xk+1 ) − f (xk )
+         (xk ) =                                                           (6.3.13)
+      dx                ∆x
+for some ∆x. So, if we want to obtain the derivative of our signal, we have
+two options: i) use finite differences, and ii) take our signal, discretize with n
+samples, obtain the FFT of the signal, multiple by jκ, and obtain the IFFT.
+We can observe in Figure 18.a) the result of the true derivative (black), the
+finite difference method (blue) and the FFT (red). Both, the finite difference
+method (blue) and the FFT (red) are very close to the true derivative, but we
+can observe in Figure 18.b) the error in both methods, in which is seen how the
+FFT performs much better than the finite Euler method.
+
+
+                                          64
+6.4    Most natural signals are sparse in the Fourier base
+
+Let us assume a vector of data x∈Rn , a vector x is called sparse if it has a large
+number of components equal to zero (or a small number of nonzero components).
+A vector x is called dense if it has a large number of components non equal to
+zero. A vector x is called k-sparse if it has n − k components equal to zero,
+and k components equal to zero.
+A fundamental property in science and engineering is that many natural signals
+(pictures, video, audio, music, physical magnitudes such as heat, pressure, etc)
+are sparse when expressed in the Fourier base. This is consequence of a fact of
+nature that many of these signals are smooth.
+On the contrary, if we generate a random vector, for instance with i.i.d compo-
+nents sampled from a Gaussian distribution, we would have that with very high
+probability the components of the vector expressed in Fourier base will be not
+sparse. We call this sequence white noise.
+
+
+7     Optional: Graph signal processing and its ap-
+      plications
+
+7.1    Introduction
+
+The framework of graph signal processing (GSP) was conceived in the last
+decade with the ambition of generalizing the tools from classical digital signal
+processing to the case in which the signal is defined over an irregular structure
+modeled by a graph.
+Let us take the example (taken from Ljubisa Stankovic et al. survey paper,
+”Understanding the basis of graph signal processing via an intuitive example-
+driven approach”, arXiv, May 2019) where a set of temperature sensors are
+deployed over a large region. We are interested, Figure 19.a), of finding the
+local neighborhood of nodes, in such a way that we will find a graph that
+represents the network, Figure 19.b).
+We have been able to connect (we will see later how), for example, node 20 with
+nodes 19, 22, 23, and node 29 with nodes 27, 28, 51, 59, and so on.
+If x(n) is the temperature value of node n, then we can now draw the temper-
+ature using bars, Figure 20.a) or even with color in the vertices, Figure 20.b).
+The objective is that now we can consider that the signal in a given node n is
+related to the node itself and its neighborhood:
+                       ∑︂
+      y(n) = x(n) +          x(m)                                      (7.1.1)
+                     m∈N (n)
+
+
+
+
+                                        65
+   (a) Local neighborhood of single nodes.        (b) Local neighborhood for all sensors.
+
+
+Figure 19: Multisensor IoT example, where nodes measure temperature (Fig-
+ure taken from L. Stankovic et al ”Understanding the Basis of Graph Signal
+Processing via an Intuitive Example-Driven Approach” paper). Graph repre-
+sentation.
+
+
+
+
+   (a) Bars indicate temperature values.     (b) Temperature values as bars (left) and ver-
+                                             tex color (right)
+
+
+Figure 20: Multisensor IoT example, where nodes measure temperature (Fig-
+ure taken from L. Stankovic et al ”Understanding the Basis of Graph Signal
+Processing via an Intuitive Example-Driven Approach” paper). Colour repre-
+sentation of the temperature field.
+
+with N(n) the neighborhood of node n. For example, for node n=20:
+     y(20) = x(20) + x(19) + x(22) + x(23)                                            (7.1.2)
+For convenience, we will write this expression as:
+     y = x + Ax                                                                       (7.1.3)
+
+
+                                             66
+where matrix A is the adjacency matrix. There are several ways of creating a
+graph. The key is in discovering which are the relationships among the nodes.
+
+Example 7.1 (Subgraph of node 29) The subgraph represented by node 29
+with neighbors 27, 28, 51, 59 in Figure 20.b) would be represented by matrix:
+          ⎡                ⎤
+            0 1 1 1 1
+          ⎢1 0 1 1 0⎥
+          ⎢                ⎥
+      A=⎢ ⎢1 1 0 1 1⎥                                                   (7.1.4)
+                           ⎥
+          ⎣1 1 1 0 1⎦
+            1 0 1 1 0
+
+The objective of GSP is to give a framework able to operate over such a graph
+making use of these relationships.
+
+
+7.2    Adjacency matrix, the weighted matrix and the Lapla-
+       cian matrix
+
+The adjacency matrix is not the only way of representing the graph. Other ways
+is using a weighted matrix and the Laplacian matrix.
+The weighted matrix W has coefficients wij >0 if node i is connected to node
+j, and zero otherwise. The idea behind the weighted matrix is that the cost of
+the edges between connected nodes is not equal to one, thus considering that
+are nodes better connected than others. In this case:
+                      ∑︂
+      y(n) = x(n) +        wmn x(n) −→ y = x + W x                     (7.2.1)
+                    m∈N (n)
+
+We can observe that the operator A is a special case of the operator W , in
+which all weights are considered of the same value.
+Finally, we can use a third operator called the Laplacian matrix L, which is
+obtained as:
+
+      L=D−W                                                             (7.2.2)
+
+where D is the degree matrix and it has coefficients in the diagonal dii =
+∑︁
+  j̸=i wij (sum of row except the value at the diagonal) and the rest are 0.
+
+
+Example 7.2 (Laplacian matrix) We want to obtain the laplacian matrix
+L, from the weight matrix W :
+           ⎡              ⎤
+             0 .6 .3 0
+           ⎢.6 0 .1 .4⎥
+      W =⎢ ⎣.3 .1 0 .2⎦
+                          ⎥                                    (7.2.3)
+             0 .4 .2 0
+
+                                      67
+                                                              ∑︁
+We first obtain the diagonal matrix D as sum of rows dii =      j̸=i wij :
+        ⎡                   ⎤
+         .9      0     0 0
+        ⎢0      1.1   0 0⎥
+      D=⎢
+        ⎣0
+                            ⎥                                                (7.2.4)
+                 0    .6 0 ⎦
+          0      0     0 .6
+
+Then, the Laplacian will be:
+                    ⎡                    ⎤
+                       .6 −.6 −.3     0
+                    ⎢−.6 1.1 −.1 −.4⎥
+     L=D−W =⎢       ⎣−.3 −.1 .6 −.2⎦
+                                         ⎥                                   (7.2.5)
+                        0    −.4 −.2 0.6
+
+
+7.3    Creating the graph
+
+There are several ways of creating a graph. The key is in discovering which are
+the relationships among the nodes:
+
+   • Physically knowledge of the weights: there is an intrinsic knowledge
+     of what are the weights, for example, circuits in electronic systems, social
+     networks, etc;
+
+   • Geometry of the vertex: use Euclidean distances. In this case it is
+     built as a decreasing function of the distance:
+                  {︄   2      2
+                    e−dij /(2θ ) if dij <T ,
+           wij =                                                 (7.3.1)
+                    0            otherwise.
+
+      The choice of the parameters T and θ (standard deviation of the distri-
+      bution), and of how to use the metric (in this case, inside a Gaussian
+      distribution), are dictated by the application and by the analyst experi-
+      ence.
+
+   • Obtain the weighted matrix or the Laplacian matrix from the
+     data measured matrix X. A first example is to obtain the weight
+     matrix using the correlations between sensor data. For that purpose, we
+     consider that the signals of each node x1 , . . . , xN form a multivariate
+     Gaussian distribution N(0, Σ). Then, the weighted matrix is obtained
+     from the precision matrix Θ= Σ−1 . Since only the sample covariance is
+     known, the graphical Lasso (GLASSO) problem is to estimate the preci-
+     sion matrix Θ̄:
+                           ⎛                                     ⎞
+                                                        ∑︂
+           Θ̂ = argminΘ≥0 ⎝tr(SΘ) − log det(Θ) + λ         |Θjk |⎠      (7.3.2)
+                                                       j̸=k
+
+
+
+                                       68
+where S is the sample covariance of X and λ is the penalizing parameter.
+Now, we define the weight matrix as W =Θ̂. We can control the sparsity
+of the graph by fixing a threshold T h: if Θ̂ij ≤T h then Θ̂ij =0. These
+links with values Θ̂ij =0 are thus disconnected in the graph.
+Another example is to use a non-linear optimization model to directly
+obtain the Laplacian matrix L from the data matrix X:
+
+      minimize     ∥X − Y∥2F + α tr(Y⊤ LY) +β∥L∥2F
+        L,Y        ⏞ ⏟⏟ ⏞ ⏞             ⏟⏟     ⏞
+                   data f idelity   smoothness
+                                  ⏞         ⏟⏟   ⏞
+                                             sparsity
+                                                                      (7.3.3)
+      subject to   tr(L) = n,
+                   Lij = Lji ≤ 0,        i ̸= j,
+                   L · 1 = 0.
+
+We will study convex non-linear optimization in TOML-MIRI course, but
+we can say that this optimization problem is not convex (it has not global
+minimum). But it can be solved using in an alternating procedure, in
+which we first fix Y = X, so we find L from our data measurements X.
+We can play the sparsity (more Lij =0, meaning more nodes disconnected)
+of our solution using the β parameter. Finally when L is found, we can
+solved again fixing the L found and finding Y that will be a filtered version
+of our data X.
+
+
+
+
+                                    69
+Figure 21: Eigenvalues and eigenvectors of an N=8 node network (Figure taken
+from L. Stankovic et al ”Understanding the Basis of Graph Signal Processing
+via an Intuitive Example-Driven Approach” paper).
+
+
+
+
+                                    70
+7.4    Spectral graph theory
+
+Since adjacency matrix A is squared and symmetric (A=A⊤ ), is i) diagonizable,
+ii) its eigenvalues are real (Λ=diag(λ0 , . . . , λN −1 ) is a diagonal matrix), and iii)
+its eigenvectors are orthogonal (∥uk ∥22 = 1):
+
+      A = U ΛU −1 = U ΛU ⊤                                                       (7.4.1)
+
+
+7.5    The adjacency matrix and the graph signal shift
+
+Let us consider N samples of a signal expressed as a vector x=[x0 , x1 , . . . , xN −1 ].
+A signal shift on a graph can be defined as the movement of the signal sample,
+xn , from its original vertex, n, along all walks of length one that start at vertex
+n. If we define x(1) as the signal shifted, then:
+
+      x(1) = Ax                                                                  (7.5.1)
+
+In case we go on shifting the signal:
+
+      x(2) = Ax(1) = A2 x                                                        (7.5.2)
+
+and thus, m shiftings result in:
+
+      x(m) = Ax(m−1) = A2 x(m−2) = · · · = Am−1 x(1) = Am x                      (7.5.3)
+
+You can recall that instead of the adjacency matrix A we can use the Laplacian
+matrix L, and consider the adjacency matrix a special case of the Laplacian
+matrix, and thus:
+
+      x(m) = Lm x                                                                (7.5.4)
+
+
+7.6    The graph discrete Fourier transform
+
+The graph discrete Fourier transform (GDFT) of a signal, x, is defined as:
+
+
+      X = U −1 x                                                                 (7.6.1)
+
+where X denotes a vector of the GDFT coefficients, and U is a matrix whose
+columns represent the eigenvectors of the adjacency matrix, A or the Laplacian
+matrix L. Let us assume that we take the adjacency matrix (same considerations
+but different behavior if we use the Laplacian matrix), then vector X has k=0,1,
+. . . , N-1 coefficients. Since matrix A is symmetric (A⊤ =A), we have that U −1
+=U ⊤ , and:
+
+      X = U ⊤x                                                                   (7.6.2)
+
+
+                                           71
+The inverse graph discrete Fourier transform (IGDFT) of a signal, x, is
+thus defined as:
+
+        x = UX                                                             (7.6.3)
+
+In case of having a circular graph, the GDFT reduces to the classical DFT.
+Given that we have defined a GDFT/IGDFT, we can define filters, convolutions,
+spectral analysis, signal reconstruction, denoising, and different operations per-
+formed in classical signal processing.
+
+
+7.7      Signal reconstruction in a IoT network
+
+We consider the problem of having a subset of nodes (vertices of the graph)
+with samples and we would like to estimate the signal of the graph in the other
+vertices so that the resulting signal is smooth. Let is call M the set of nodes
+in the graph with observed data, and U the set of nodes in the graph with
+observed data (missing data). Thus the objective is to find the unobserved data
+from the observed neighboring nodes. This can be seen as a signal reconstruction
+problem that can be solved using methods from various fields. Let us consider
+the following methods; Laplacian interpolation and GSP low-pass based graph
+signal reconstruction. Laplacian interpolation is a graph-based semi-supervised
+learning algorithm whose goal is regression with graph regularization assuming
+smoothness with respect to the Laplacian matrix. This method regresses a
+function f :V→R over the graph G, assuming partial information, it is to say,
+information for M nodes. GSP low-pass based graph signal reconstruction is
+a graph signal processing reconstruction method that considers subsampling
+low-pass graph signals, thus assuming a sparse Fourier coefficient vector.
+
+
+7.7.1      Laplacian interpolation
+
+Also known as graph interpolated regularization by Belkin et al., this method
+minimizes the quadratic form of the Laplacian matrix with respect to the graph
+signal x, which is a measure of signal smoothness, given that the observed
+measurements {xm : ∀m∈M} remain unchanged. The reason that the quadratic
+form of the Laplacian is a mesaure of the smoothness of a signal is that the rows
+and coluns of the Laplacian sums zero. Thus a constant signal satisfies that:
+Q(L)=x⊤ Lx=0. As a consequence, smooth signals will have small Q(L), while
+non-smooth signals will have large Q(L). Then, the reconstruction results in a
+linear combination of the observations weighted by the Laplacian matrix entries
+Lij .
+
+        M inimize   y⊤ Ly
+               y
+
+        s.t.        ym = xm ,    ∀m∈M                                      (7.7.1)
+
+
+
+                                       72
+7.7.2     Graph Signal Processing (GSP) low-pass reconstruction
+
+This technique recovers a set of unobserved nodes {xu : ∀u∈U} given that the
+graph discrete Fourier transform of the complete signal is sparse and of low-pass
+nature, meaning that it has K nonzero components corresponding to the lowest
+frequencies (smallest eigenvalues λi of the Laplacian matrix). Given that the
+Laplacian matrix admits the eigendecomposition L=UΛU⊤ , the graph discrete
+Fourier transform (GDFT) of a graph signal x can be computed as:
+
+        X = U−1 x                                                         (7.7.2)
+
+Now, a K-sparse GDFT coefficient vector of the following form is to be recovered:
+
+
+        X = (X(0), . . . , X(K − 1), 0, . . . , 0)⊤                       (7.7.3)
+
+For this purpose a subset of measurements M are used to recover the sparse
+coefficient vector by solving the following system:
+
+        xM = UMK XK                                                       (7.7.4)
+
+where UMK correspond to the K eigenvectors with largest eigenvalues. Since
+the system is overdetermined, the solution of the above system in the least
+squares sense is given by XK = U†MK xM , where U†MK = (U⊤    MK UMK )
+                                                                        −1 ⊤
+                                                                          UMK
+is the matrix pseudo-inverse of UMK ; the nonzero coefficients are obtained, and
+after appending the corresponding zero coefficients, the inverse graph discrete
+Fourier transform (IGDFT) x=UX is computed to obtain the complete set of
+measurements x at all vertices.
+
+Example 7.3 (GSP low pass reconstruction) Let us assume a network with
+N = 8 nodes, in which we only have M = 4 measurements, e.g. x(2), x(4), x(5)
+and x(7), and we want to reconstruct the signal with K = 2 coefficients.
+Then, we have to find X(0) and X(1) that satisfies:
+     ⎡     ⎤ ⎡               ⎤
+      x(2)      u0 (2) u1 (2) [︃    ]︃
+     ⎢x(4)⎥ ⎢u0 (4) u1 (4)⎥ X(0)
+     ⎢     ⎥=⎢               ⎥                                            (7.7.5)
+     ⎣x(5)⎦ ⎣u0 (5) u1 (5)⎦ X(1)
+      x(7)      u0 (7) u1 (7)
+
+where u0 and u1 correspond to the eigenvectors with largest eigenvalues. For
+finding X(0) and X(1), we solve the overdetermined system, and when we have
+these GDFT coefficients, we can obtain the original ones applying the IGDFT
+x=UX, with X=[X(0), X(1), 0, 0, 0, 0, 0, 0].
+
+
+
+
+                                              73
+
