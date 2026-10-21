@@ -79,9 +79,10 @@ prose instead of trusting every line break in `portfolio.txt`.
 `notebooks/Part1.ipynb` is the completed **reference implementation** for topic 1
 and the model for structure, tone and code style. `notebooks/Part2.ipynb` and
 `notebooks/Part3.ipynb` are also complete. `notebooks/Part4.ipynb` implements
-exercises 4.1–4.4, `notebooks/Part5.ipynb` implements 5.1–5.3 and
-`notebooks/Part6.ipynb` implements 6.1–6.4. Create the remaining Parts 7–8
-only when the user asks for them.
+exercises 4.1–4.4, `notebooks/Part5.ipynb` implements 5.1–5.3,
+`notebooks/Part6.ipynb` implements 6.1–6.4, `notebooks/Part7.ipynb` implements
+7.1–7.3 and `notebooks/Part8.ipynb` implements 8.1–8.5. All eight topics of the
+sheet are covered; create a further part only when the user asks for it.
 
 The notebooks are organised **one notebook per topic**, not per exercise:
 
@@ -155,6 +156,18 @@ Explain.
   than cleared and refilled. Do not drive redraws from `widgets.interactive_output`
   or a per-update cleared `Output`: the block blanks out on every slider move.
 
+### Numerical notes
+
+- **Timings need one BLAS thread.** Set `OPENBLAS_NUM_THREADS`, `OMP_NUM_THREADS`
+  and `MKL_NUM_THREADS` to `"1"` in the `## Setup` cell, *before* the first
+  `import numpy` — the thread count is read when the library loads. With the
+  default thread pool the spin-waiting threads make small timings jitter by an
+  order of magnitude (the same product measured 1.6e-6 s and 1.2e-4 s on
+  different runs), and the log–log slope of a cost curve becomes unreadable.
+- **Batched products.** A helper that returns one row per parameter gives an
+  array of shape `(n, d)`. Multiply it as `points @ A.T`; `A @ points` raises
+  `ValueError: matmul ... size n is different from d`.
+
 ### Definition of done
 
 A notebook is finished when:
@@ -182,12 +195,40 @@ After editing a cell, re-execute it; and when several cells were touched, restar
 and re-run the whole notebook top-to-bottom so `execution_count` stays in order.
 
 Create notebooks with `use_notebook(mode="create", ...)`, not by writing the file.
+That call inserts a placeholder cell 0 ("New Notebook Created by Jupyter MCP
+Server") — overwrite it with the `# Part N — <topic>` title, or delete it.
+
 The MCP tools do not expose notebook metadata, so a newly created notebook has an
-empty `kernelspec`; if JupyterLab makes you pick a kernel, choose the only entry it
-offers, **Python 3 (ipykernel)** (kernel name `python3`, the ipykernel of the `mcp`
-environment), once and save; never patch the `.ipynb` JSON by hand. `Part1.ipynb`
-already has the correct kernel recorded — its metadata display name
-`portfolio-LA:mcp (3.12.15)` is what pixi calls the environment and is *not* a
-JupyterLab kernelspec label; `Part2.ipynb` and `Part3.ipynb` still have empty
-`kernelspec` metadata and need the kernel selected once in JupyterLab and the
-notebook saved.
+empty `kernelspec`. Fix it through the Jupyter server's own contents API — a
+server-side save, not a hand-edit of the `.ipynb` JSON:
+
+```python
+import json, urllib.request
+
+BASE = "http://127.0.0.1:8888/api/contents/notebooks/"
+AUTH = {"Authorization": "token portfolio-la-jupyter-dev-token"}
+
+def get(name):
+    return json.loads(urllib.request.urlopen(
+        urllib.request.Request(BASE + name, headers=AUTH)).read())
+
+def put(name, model):
+    body = json.dumps({"content": model["content"], "format": "json",
+                       "type": "notebook", "metadata": {}}).encode()
+    req = urllib.request.Request(BASE + name, data=body, method="PUT",
+                                 headers={**AUTH, "Content-Type": "application/json"})
+    return json.loads(urllib.request.urlopen(req).read())
+
+src, dst = get("Part6.ipynb"), get("Part8.ipynb")
+for key in ("kernelspec", "language_info"):
+    dst["content"]["metadata"][key] = src["content"]["metadata"][key]
+put("Part8.ipynb", dst)
+```
+
+Copy `kernelspec` and `language_info` from `Part1.ipynb` or `Part6.ipynb`; their
+metadata display name `portfolio-LA:mcp (3.12.15)` is what pixi calls the
+environment and is *not* a JupyterLab kernelspec label. **This metadata write
+must be the last write to the notebook**: the MCP server holds its own in-memory
+model and re-saves it with the empty `kernelspec` on the next edit or re-run, so
+re-run the notebook first and write the metadata afterwards. `Part2.ipynb` and
+`Part3.ipynb` still have empty `kernelspec` metadata and need the same fix.
