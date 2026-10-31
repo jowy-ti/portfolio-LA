@@ -76,13 +76,12 @@ extracted text. The extraction mangles some formulas (split lines, missing
 symbols, broken fractions), so reconstruct each formula from the surrounding
 prose instead of trusting every line break in `portfolio.txt`.
 
-`notebooks/Part1.ipynb` is the completed **reference implementation** for topic 1
-and the model for structure, tone and code style. `notebooks/Part2.ipynb` and
-`notebooks/Part3.ipynb` are also complete. `notebooks/Part4.ipynb` implements
-exercises 4.1–4.4, `notebooks/Part5.ipynb` implements 5.1–5.3,
-`notebooks/Part6.ipynb` implements 6.1–6.4, `notebooks/Part7.ipynb` implements
-7.1–7.3 and `notebooks/Part8.ipynb` implements 8.1–8.5. All eight topics of the
-sheet are covered; create a further part only when the user asks for it.
+All eight notebooks are complete and share the same lean layout: title, `## Setup`,
+then one `## N.M` section per exercise split into **Task**, **Explore** (where the
+sheet has one) and **Explain**. `notebooks/Part4.ipynb` §4.1 is the calibration
+for length and tone, and `notebooks/Part1.ipynb` shows the same pattern for the
+3-D subspace pictures. All eight topics of the sheet are covered; create a
+further part only when the user asks for it.
 
 The notebooks are organised **one notebook per topic**, not per exercise:
 
@@ -126,10 +125,11 @@ cell, and notebooks must not import from one another.
 - Static figures use Matplotlib. Any interactive control (sliders, buttons that
   change a parameter) uses `ipywidgets`, redrawing by replacing its outputs in
   place (see *Way of solving exercises*), with a static Matplotlib figure in the
-  preceding cell as the durable view. Do not build sliders with Plotly
-  (`go.Frame` sliders or `updatemenus`). Part4 §4.1 and Part5 §5.3 are the
-  reference implementations of this pattern; §5.3 has two independent sliders
-  for the direction of a 3-D vector.
+  preceding cell as the durable view. Plotly is not used anywhere in the
+  notebooks: no `go.Frame` sliders, no `updatemenus`. Part4 §4.1 and Part5 §5.3
+  are the reference implementations of this pattern; §5.3 has two independent
+  sliders for the direction of a 3-D vector, and Part1 §1.1 / §1.2 use
+  `ToggleButtons` and a `FloatSlider` to drive static Matplotlib 3-D views.
   `pixi.toml` declares `ipywidgets` and `.vscode/settings.json` configures widget
   script sources for interactive cells.
 
@@ -230,5 +230,5 @@ metadata display name `portfolio-LA:mcp (3.12.15)` is what pixi calls the
 environment and is *not* a JupyterLab kernelspec label. **This metadata write
 must be the last write to the notebook**: the MCP server holds its own in-memory
 model and re-saves it with the empty `kernelspec` on the next edit or re-run, so
-re-run the notebook first and write the metadata afterwards. `Part2.ipynb` and
-`Part3.ipynb` still have empty `kernelspec` metadata and need the same fix.
+re-run the notebook first and write the metadata afterwards. Every notebook in
+`notebooks/` now carries that metadata; re-check it after any MCP re-save.
