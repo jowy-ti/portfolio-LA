@@ -4,3 +4,5 @@
 .jupyter_ystore.db
 .jupyter/
 .ipynb_checkpoints/
+# Python bytecode
+__pycache__/
